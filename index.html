@@ -15,12 +15,7 @@
     --success:#34c759;
     --danger:#ff3b30;
   }
-  body{
-    margin:0;
-    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    background:linear-gradient(180deg,#fffaf0,#f0f7ff);
-    color:#222;
-  }
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#fffaf0,#f0f7ff);color:#222}
   .app{max-width:980px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
   header{display:flex;align-items:center;gap:14px;padding:18px}
   .logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;box-shadow:0 10px 30px rgba(255,107,107,0.18)}
@@ -31,44 +26,10 @@
   .menu{display:flex;gap:8px;overflow:auto;padding:6px 0}
   .menu button{padding:10px 12px;border-radius:12px;border:0;background:#f6f6f6;font-weight:700}
   .menu button.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:white}
-  .hero{display:flex;align-items:center;gap:16px}
-  .greet{font-size:16px}
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-  }
-
-  /* thumb: sabit oranlı kutu (16:10) - içindeki img tamamı görünür */
-  .thumb{
-    border-radius:12px;
-    overflow:hidden;
-    position:relative;
-    border:6px solid transparent;
-    transition:transform .18s, border-color .18s;
-    background:#fafafa; /* hafif arka plan kenarları için */
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    /* sabit oran: padding-top yöntemi ile 56% ~ 16:9 ; burada 70% daha dik görüntüler için */
-  }
-  .thumb .media{
-    width:100%;
-    height:0;
-    padding-top:70%; /* kart yüksekliğini belirler; görsellerin kutu içinde tam görünmesini sağlar */
-    position:relative;
-  }
-  .thumb img{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    max-width:100%;
-    max-height:100%;
-    object-fit:contain; /* kırpma yok, tamamı görünür */
-    display:block;
-  }
-
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .thumb{border-radius:12px;overflow:hidden;position:relative;border:6px solid transparent;transition:transform .18s, border-color .18s;background:#fafafa;display:flex;align-items:center;justify-content:center}
+  .thumb .media{width:100%;height:0;padding-top:70%;position:relative}
+  .thumb img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:100%;max-height:100%;object-fit:contain;display:block}
   .label{padding:8px;text-align:center;font-weight:800;background:linear-gradient(180deg,rgba(255,255,255,0.6),transparent)}
   .big-btn{width:100%;padding:12px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#ff8a6b);color:#fff;font-weight:800}
   .controls{display:flex;gap:8px;flex-wrap:wrap}
@@ -78,10 +39,7 @@
   input[type=text]{width:100%;padding:10px;border-radius:10px;border:1px solid #eee}
   .small{font-size:12px;color:var(--muted)}
   #previewArea img{max-width:100%;border-radius:12px;margin-top:6px}
-  @media (max-width:480px){
-    .grid{grid-template-columns:repeat(1,1fr)}
-    .logo{width:54px;height:54px}
-  }
+  @media (max-width:480px){ .grid{grid-template-columns:repeat(1,1fr)} .logo{width:54px;height:54px} }
 </style>
 </head>
 <body>
@@ -153,14 +111,14 @@
         <h3>Test</h3>
         <div class="muted">Sesle sorulur; doğru fotoğrafı seç.</div>
         <div style="margin-top:8px">
-          <button onclick="startQuiz()" class="big-btn" style="background:linear-gradient(90deg,#6bffb0,#34c759)">Teste Başla</button>
+          <button id="startQuizBtn" class="big-btn" style="background:linear-gradient(90deg,#6bffb0,#34c759)">Teste Başla</button>
         </div>
         <div id="quizArea" style="margin-top:12px"></div>
       </section>
 
       <section id="view-settings" class="card" style="display:none">
         <h3>Ayarlar</h3>
-        <div class="muted">Konuşma dili</div>
+        <div class="muted">Konuşma dili (kelimelerin telaffuzu için)</div>
         <div style="margin-top:8px">
           <label>Konuşma Dili</label>
           <select id="voiceLang" style="width:100%;padding:10px;border-radius:8px;margin-top:6px">
@@ -179,8 +137,6 @@
 <script>
 /* Local storage key */
 const STORAGE_KEY = 'minik_words_local_v1';
-
-/* words array: { id, english, imageURL, createdAt } */
 let words = loadFromStorage();
 
 /* Navigation */
@@ -190,40 +146,28 @@ function navigate(view){
   ['home','library','add','quiz','settings'].forEach(v=>{
     document.getElementById('view-'+v).style.display = (v===view ? 'block' : 'none');
   });
-  if(view === 'home' || view === 'library') {
-    renderHomeGallery();
-    renderGallery();
-  }
+  if(view === 'home' || view === 'library') { renderHomeGallery(); renderGallery(); }
 }
 
 /* Storage helpers */
 function loadFromStorage(){
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return [];
-    return JSON.parse(raw);
-  } catch(e){ console.error('load error', e); return []; }
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
+  catch(e){ console.error('load error', e); return []; }
 }
-function saveToStorage(){
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
-  } catch(e){ console.error('save error', e); alert('Kaydetme sırasında hata: localStorage dolu veya erişim yok.'); }
-}
+function saveToStorage(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(words)); } catch(e){ console.error('save error', e); alert('Kaydetme sırasında hata: localStorage dolu veya erişim yok.'); } }
 
 /* Rendering */
 function renderHomeGallery(){
-  const el = document.getElementById('homeGallery');
-  el.innerHTML = '';
+  const el = document.getElementById('homeGallery'); el.innerHTML = '';
   if(words.length === 0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
   words.slice().reverse().forEach(w=>{
     const d = document.createElement('div'); d.className='thumb';
-    // media kutusu (sabit oran) ve img içinde object-fit:contain ile tam görünürlük
     d.innerHTML = `<div class="media"><img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}"></div><div class="label">${escapeHtml(w.english)}</div>`;
     d.onclick = () => {
-      speak(w.english);
+      // Kelimeyi seçince kelime dil ayarına göre okunur
+      speakWord(w.english);
       const badge = document.createElement('div'); badge.style.position='absolute'; badge.style.top='8px'; badge.style.right='8px';
-      badge.style.padding='6px 8px'; badge.style.borderRadius='10px'; badge.style.background='rgba(255,255,255,0.9)';
-      badge.style.fontWeight='800'; badge.innerText='Metehan ✨';
+      badge.style.padding='6px 8px'; badge.style.borderRadius='10px'; badge.style.background='rgba(255,255,255,0.9)'; badge.style.fontWeight='800'; badge.innerText='Metehan ✨';
       d.appendChild(badge);
       setTimeout(()=>{ badge.remove(); }, 900);
     };
@@ -232,15 +176,14 @@ function renderHomeGallery(){
 }
 
 function renderGallery(){
-  const el = document.getElementById('gallery');
-  el.innerHTML = '';
+  const el = document.getElementById('gallery'); el.innerHTML = '';
   if(words.length === 0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
   words.slice().reverse().forEach(w=>{
     const d = document.createElement('div'); d.className='thumb';
     d.innerHTML = `<div class="media"><img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}"></div><div class="label">${escapeHtml(w.english)}</div>`;
     const btns = document.createElement('div'); btns.style.display='flex'; btns.style.justifyContent='center'; btns.style.gap='8px'; btns.style.padding='8px';
     const pBtn = document.createElement('button'); pBtn.innerText='🔊'; pBtn.style.padding='8px';
-    pBtn.onclick = (ev)=>{ ev.stopPropagation(); speak(w.english); };
+    pBtn.onclick = (ev)=>{ ev.stopPropagation(); speakWord(w.english); };
     const delBtn = document.createElement('button'); delBtn.innerText='Sil'; delBtn.style.padding='8px';
     delBtn.onclick = (ev)=>{
       ev.stopPropagation();
@@ -249,14 +192,11 @@ function renderGallery(){
       saveToStorage();
       renderHomeGallery(); renderGallery();
     };
-    btns.appendChild(pBtn);
-    btns.appendChild(delBtn);
-    d.appendChild(btns);
-    el.appendChild(d);
+    btns.appendChild(pBtn); btns.appendChild(delBtn); d.appendChild(btns); el.appendChild(d);
   });
 }
 
-/* Add by image URL (preview + save) */
+/* Add by image URL */
 const imgUrlInput = document.getElementById('imgUrlInput');
 const previewArea = document.getElementById('previewArea');
 const previewBtn = document.getElementById('previewUrlBtn');
@@ -264,22 +204,14 @@ const clearPreviewBtn = document.getElementById('clearPreviewBtn');
 const saveBtn = document.getElementById('saveWordBtn');
 
 previewBtn.addEventListener('click', ()=> {
-  const url = (imgUrlInput.value || '').trim();
-  previewArea.innerHTML = '';
+  const url = (imgUrlInput.value || '').trim(); previewArea.innerHTML = '';
   if(!url){ previewArea.innerHTML = '<div class="muted">Lütfen geçerli bir URL girin.</div>'; return; }
-  const img = document.createElement('img');
-  img.src = url;
-  img.alt = 'preview';
-  img.onerror = () => {
-    previewArea.innerHTML = '<div class="muted">Resim yüklenemiyor (CORS veya hatalı URL olabilir).</div>';
-  };
+  const img = document.createElement('img'); img.src = url; img.alt = 'preview';
+  img.onerror = () => { previewArea.innerHTML = '<div class="muted">Resim yüklenemiyor (CORS veya hatalı URL olabilir).</div>'; };
   previewArea.appendChild(img);
 });
 
-clearPreviewBtn.addEventListener('click', ()=> {
-  imgUrlInput.value = '';
-  previewArea.innerHTML = '';
-});
+clearPreviewBtn.addEventListener('click', ()=> { imgUrlInput.value = ''; previewArea.innerHTML = ''; });
 
 saveBtn.addEventListener('click', ()=> {
   const word = (document.getElementById('wordText').value || '').trim();
@@ -287,69 +219,145 @@ saveBtn.addEventListener('click', ()=> {
   if(!word){ alert('İngilizce kelime girin.'); return; }
   if(!url){ alert('Resim URL girin.'); return; }
   if(!/^https?:\/\//i.test(url)){ alert('Geçerli bir http veya https URL girin.'); return; }
-  // add
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   words.push({ id, english: word, imageURL: url, createdAt: Date.now() });
   saveToStorage();
-  document.getElementById('wordText').value = '';
-  imgUrlInput.value = '';
-  previewArea.innerHTML = '<div class="small">Kaydedildi ✓</div>';
+  document.getElementById('wordText').value = ''; imgUrlInput.value = ''; previewArea.innerHTML = '<div class="small">Kaydedildi ✓</div>';
   setTimeout(()=>{ navigate('library'); renderHomeGallery(); renderGallery(); }, 700);
 });
 
-/* TTS */
-function speak(text){
-  if(!('speechSynthesis' in window)){ alert('Tarayıcı konuşma API desteklemiyor'); return; }
+/* ---------- TTS helpers ---------- */
+/* speakWord: kelimeleri seçilen dilde okur (voiceLang) */
+function speakWord(text){
   const lang = document.getElementById('voiceLang').value || 'en-US';
-  const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.9;
-  window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+  speakWithLang(text, lang);
 }
 
-/* Quiz logic */
+/* speakWithLang: belirli dilde konuşur (aynı anda çoklu çağrı karmaşasını önlemek için cancel) */
+function speakWithLang(text, lang='tr-TR'){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang;
+  u.rate = 0.95;
+  window.speechSynthesis.speak(u);
+}
+
+/* speakFeedback: kısa geri bildirimleri Türkçe olarak yönetir; tekrar sayısını parametreyle kontrol eder */
+function speakFeedback(text, repeats=1, delay=600){
+  if(!('speechSynthesis' in window)) return;
+  // İlk söylem hemen
+  speakWithLang(text, 'tr-TR');
+  // tekrarlar (kullanıcı istedi: "tekrar tekrar cevaplamanı istiyorum")
+  for(let i=1;i<repeats;i++){
+    setTimeout(()=> speakWithLang(text, 'tr-TR'), i*delay);
+  }
+}
+
+/* ---------- Quiz logic with speech feedback ---------- */
 let currentQuiz = null;
+
+document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
+
 function startQuiz(){
   if(words.length === 0){ alert('Önce kelime ekleyin.'); return; }
   const questions = shuffle([...words]);
   currentQuiz = { questions, index: 0, results: [] };
   renderQuizQuestion();
 }
+
 function renderQuizQuestion(){
   const qObj = currentQuiz.questions[currentQuiz.index];
   const qArea = document.getElementById('quizArea'); qArea.innerHTML = '';
   const decoys = words.filter(w=>w.id !== qObj.id);
   const pick = shuffle(decoys).slice(0,4);
   const choices = shuffle([qObj, ...pick]);
+
   qArea.innerHTML = `<div class="center" style="font-weight:800">Soru ${currentQuiz.index+1} / ${currentQuiz.questions.length}</div>
-    <div style="margin-top:10px" class="center"><button onclick="speak('${escapeForJS(qObj.english)}')" class="big-btn" style="background:linear-gradient(90deg,#ffd166,#ff6b6b)">🔊 Dinle</button></div>`;
+    <div style="margin-top:10px" class="center"><button id="playWordBtn" class="big-btn" style="background:linear-gradient(90deg,#ffd166,#ff6b6b)">🔊 Dinle</button></div>`;
+
+  document.getElementById('playWordBtn').addEventListener('click', ()=> {
+    speakWord(qObj.english);
+  });
+  // otomatik dinlet
+  setTimeout(()=> speakWord(qObj.english), 250);
+
   const grid = document.createElement('div'); grid.className='grid'; grid.style.marginTop='12px';
+
   choices.forEach(choice=>{
     const w = document.createElement('div'); w.className='thumb';
     w.innerHTML = `<div class="media"><img src="${escapeHtml(choice.imageURL)}" alt=""></div><div class="label"></div>`;
-    w.onclick = ()=>{
-      if(w.dataset.answered) return; w.dataset.answered='1';
+
+    w.onclick = () => {
+      if(w.dataset.answered) return;
+      w.dataset.answered = '1';
       const correct = (choice.id === qObj.id);
-      if(correct){ w.classList.add('outline-green');
+
+      if(correct){
+        w.classList.add('outline-green');
+        // görsel popup
         const popup = document.createElement('div'); popup.style.position='absolute'; popup.style.top='8px'; popup.style.left='8px';
-        popup.style.padding='6px 8px'; popup.style.background='rgba(255,255,255,0.9)'; popup.style.borderRadius='10px'; popup.style.fontWeight='800'; popup.innerText='Tebrikler Metehan! ⭐';
+        popup.style.padding='6px 8px'; popup.style.background='rgba(255,255,255,0.95)'; popup.style.borderRadius='10px'; popup.style.fontWeight='800'; popup.innerText='Doğru!';
         w.appendChild(popup);
-      } else { w.classList.add('outline-red');
-        setTimeout(()=>{ Array.from(grid.querySelectorAll('.thumb')).forEach(t=>{ const img=t.querySelector('img'); if(img&&img.src===qObj.imageURL) t.classList.add('outline-green'); }); },100);
+
+        // konuşma: Tebrik
+        speakFeedback('Tebrikler Metehan, doğru cevap!', 1);
+      } else {
+        w.classList.add('outline-red');
+        // highlight correct after short delay
+        setTimeout(()=>{ Array.from(grid.querySelectorAll('.thumb')).forEach(t=>{ const img=t.querySelector('img'); if(img && img.src === qObj.imageURL) t.classList.add('outline-green'); }); }, 150);
+
+        // konuşma: yanlış ve tekrar ettir (2 defa)
+        speakFeedback('Yanlış, Metehan. Tekrar dene.', 2, 700);
       }
+
       currentQuiz.results.push({ qid: qObj.id, correct });
-      setTimeout(()=>{ if(currentQuiz.index+1<currentQuiz.questions.length){ currentQuiz.index++; renderQuizQuestion(); } else{ showQuizSummary(); } },800);
+
+      // sonraki soru veya bitiş
+      setTimeout(()=> {
+        if(currentQuiz.index + 1 < currentQuiz.questions.length){
+          currentQuiz.index++;
+          renderQuizQuestion();
+        } else {
+          showQuizSummaryWithSpeech();
+        }
+      }, 900);
     };
+
     grid.appendChild(w);
   });
+
   qArea.appendChild(grid);
 }
-function showQuizSummary(){
+
+/* Quiz summary with speech */
+function showQuizSummaryWithSpeech(){
   const area = document.getElementById('quizArea');
   const correctCount = currentQuiz.results.filter(r=>r.correct).length;
   const total = currentQuiz.results.length;
+  const wrong = total - correctCount;
+
   area.innerHTML = `<div class="center"><h3>Tebrikler! Test bitti 🎉</h3>
     <div style="font-size:18px;font-weight:800">${correctCount} / ${total} doğru</div>
     <div style="margin-top:12px"><button onclick="startQuiz()" class="big-btn" style="background:linear-gradient(90deg,#6bffb0,#34c759)">Tekrar Dene</button></div>
     <div style="margin-top:8px"><button onclick="navigate('library')" class="big-btn" style="background:#9b9bff">Kütüphaneye Dön</button></div></div>`;
+
+  // Sesli özet (Türkçe)
+  // "Test bitti. X doğru, Y yanlış."
+  const summary = `Test bitti. ${correctCount} doğru, ${wrong} yanlış.`;
+  speakWithLang(summary, 'tr-TR');
+
+  // ardından tebrik / teşvik
+  setTimeout(()=> {
+    if(correctCount > wrong){
+      speakWithLang('Tebrikler Metehan! Çok iyi iş çıkardın!', 'tr-TR');
+    } else if (correctCount === wrong){
+      speakWithLang('İyi bir deneme Metehan, tekrar et, daha da iyi olacaksın!', 'tr-TR');
+    } else {
+      speakWithLang('Bir dahaki sefer daha iyi olacak, tekrar dene Metehan!', 'tr-TR');
+    }
+  }, 900);
+
   currentQuiz = null;
 }
 
@@ -359,6 +367,7 @@ function escapeForJS(str){ return (str||'').replace(/'/g,"\\'").replace(/"/g,'\\
 function escapeHtml(s){ return (s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 /* Init */
+document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
 navigate('home');
 renderHomeGallery();
 renderGallery();
