@@ -6,8 +6,21 @@
 <title>Minik İngilizce — Metehan</title>
 <link rel="icon" href="data:," />
 <style>
-  :root{--bg:#fffaf0;--card:#fff;--accent:#ff6b6b;--accent2:#ffd166;--muted:#666;--success:#34c759;--danger:#ff3b30}
-  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#fffaf0,#f0f7ff);color:#222}
+  :root{
+    --bg:#fffaf0;
+    --card:#fff;
+    --accent:#ff6b6b;
+    --accent2:#ffd166;
+    --muted:#666;
+    --success:#34c759;
+    --danger:#ff3b30;
+  }
+  body{
+    margin:0;
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    background:linear-gradient(180deg,#fffaf0,#f0f7ff);
+    color:#222;
+  }
   .app{max-width:980px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
   header{display:flex;align-items:center;gap:14px;padding:18px}
   .logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;box-shadow:0 10px 30px rgba(255,107,107,0.18)}
@@ -20,9 +33,42 @@
   .menu button.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:white}
   .hero{display:flex;align-items:center;gap:16px}
   .greet{font-size:16px}
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-  .thumb{border-radius:12px;overflow:hidden;position:relative;border:6px solid transparent;transition:transform .18s, border-color .18s}
-  .thumb img{width:100%;height:140px;object-fit:cover;display:block}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+  }
+
+  /* thumb: sabit oranlı kutu (16:10) - içindeki img tamamı görünür */
+  .thumb{
+    border-radius:12px;
+    overflow:hidden;
+    position:relative;
+    border:6px solid transparent;
+    transition:transform .18s, border-color .18s;
+    background:#fafafa; /* hafif arka plan kenarları için */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    /* sabit oran: padding-top yöntemi ile 56% ~ 16:9 ; burada 70% daha dik görüntüler için */
+  }
+  .thumb .media{
+    width:100%;
+    height:0;
+    padding-top:70%; /* kart yüksekliğini belirler; görsellerin kutu içinde tam görünmesini sağlar */
+    position:relative;
+  }
+  .thumb img{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain; /* kırpma yok, tamamı görünür */
+    display:block;
+  }
+
   .label{padding:8px;text-align:center;font-weight:800;background:linear-gradient(180deg,rgba(255,255,255,0.6),transparent)}
   .big-btn{width:100%;padding:12px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#ff8a6b);color:#fff;font-weight:800}
   .controls{display:flex;gap:8px;flex-wrap:wrap}
@@ -32,7 +78,10 @@
   input[type=text]{width:100%;padding:10px;border-radius:10px;border:1px solid #eee}
   .small{font-size:12px;color:var(--muted)}
   #previewArea img{max-width:100%;border-radius:12px;margin-top:6px}
-  @media (max-width:480px){ .grid{grid-template-columns:repeat(1,1fr)} .logo{width:54px;height:54px} }
+  @media (max-width:480px){
+    .grid{grid-template-columns:repeat(1,1fr)}
+    .logo{width:54px;height:54px}
+  }
 </style>
 </head>
 <body>
@@ -41,7 +90,7 @@
       <div class="logo">Mi</div>
       <div>
         <h1>Merhaba, METEHAN UZUN! 🎉</h1>
-        <div class="muted">Minik İngilizce — link ile resim ekleme</div>
+        <div class="muted">Minik İngilizce — link ile resim ekleme (local)</div>
       </div>
     </header>
 
@@ -76,7 +125,7 @@
 
       <section id="view-add" class="card" style="display:none">
         <h3>Kelime Ekle</h3>
-        <div class="muted">Google'dan bulduğun resmin **doğrudan URL**'sini yapıştır. Örnek: https://site.com/image.jpg</div>
+        <div class="muted">Google'dan bulduğun resmin <strong>doğrudan URL</strong>'sini yapıştır. Örnek: https://site.com/image.jpg</div>
 
         <div style="margin-top:10px">
           <label>İngilizce kelime</label>
@@ -123,29 +172,16 @@
     </main>
 
     <footer style="padding:12px;text-align:center" class="small muted">
-      Uygulama deneme amaçlı — resim linkleri dış kaynaklardan gösterilir.
+      Uygulama local olarak çalışır — veriler sadece bu cihazda saklanır.
     </footer>
   </div>
 
-<!-- Firebase SDK (compat) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script>
-/* ====== 1) BURAYA KENDİ firebaseConfig'ini KOY ====== */
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-/* =================================================== */
+/* Local storage key */
+const STORAGE_KEY = 'minik_words_local_v1';
 
-let words = [];
+/* words array: { id, english, imageURL, createdAt } */
+let words = loadFromStorage();
 
 /* Navigation */
 function navigate(view){
@@ -154,31 +190,35 @@ function navigate(view){
   ['home','library','add','quiz','settings'].forEach(v=>{
     document.getElementById('view-'+v).style.display = (v===view ? 'block' : 'none');
   });
-  if(view==='library' || view==='home') loadWordsFromServer();
-}
-
-/* Load from Firestore */
-async function loadWordsFromServer(){
-  const homeGallery = document.getElementById('homeGallery');
-  const gallery = document.getElementById('gallery');
-  homeGallery.innerHTML = '<div class="muted">Yükleniyor...</div>';
-  gallery.innerHTML = '<div class="muted">Yükleniyor...</div>';
-  try {
-    const snap = await db.collection('words').orderBy('createdAt','desc').get();
-    words = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  if(view === 'home' || view === 'library') {
     renderHomeGallery();
     renderGallery();
-  } catch(e){ console.error(e); homeGallery.innerHTML = '<div class="muted">Yükleme hatası</div>'; gallery.innerHTML = '<div class="muted">Yükleme hatası</div>'; }
+  }
 }
 
-/* Render home gallery */
+/* Storage helpers */
+function loadFromStorage(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return [];
+    return JSON.parse(raw);
+  } catch(e){ console.error('load error', e); return []; }
+}
+function saveToStorage(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+  } catch(e){ console.error('save error', e); alert('Kaydetme sırasında hata: localStorage dolu veya erişim yok.'); }
+}
+
+/* Rendering */
 function renderHomeGallery(){
   const el = document.getElementById('homeGallery');
   el.innerHTML = '';
-  if(words.length===0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
-  words.forEach(w=>{
+  if(words.length === 0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
+  words.slice().reverse().forEach(w=>{
     const d = document.createElement('div'); d.className='thumb';
-    d.innerHTML = `<img src="${w.imageURL}" alt="${w.english}"><div class="label">${w.english}</div>`;
+    // media kutusu (sabit oran) ve img içinde object-fit:contain ile tam görünürlük
+    d.innerHTML = `<div class="media"><img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}"></div><div class="label">${escapeHtml(w.english)}</div>`;
     d.onclick = () => {
       speak(w.english);
       const badge = document.createElement('div'); badge.style.position='absolute'; badge.style.top='8px'; badge.style.right='8px';
@@ -191,32 +231,32 @@ function renderHomeGallery(){
   });
 }
 
-/* Render library with delete */
 function renderGallery(){
   const el = document.getElementById('gallery');
   el.innerHTML = '';
-  if(words.length===0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
-  words.forEach(w=>{
+  if(words.length === 0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
+  words.slice().reverse().forEach(w=>{
     const d = document.createElement('div'); d.className='thumb';
-    d.innerHTML = `<img src="${w.imageURL}" alt="${w.english}"><div class="label">${w.english}</div>`;
+    d.innerHTML = `<div class="media"><img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}"></div><div class="label">${escapeHtml(w.english)}</div>`;
     const btns = document.createElement('div'); btns.style.display='flex'; btns.style.justifyContent='center'; btns.style.gap='8px'; btns.style.padding='8px';
-    const pBtn = document.createElement('button'); pBtn.innerText='🔊'; pBtn.style.padding='8px'; pBtn.onclick = (ev)=>{ ev.stopPropagation(); speak(w.english); };
+    const pBtn = document.createElement('button'); pBtn.innerText='🔊'; pBtn.style.padding='8px';
+    pBtn.onclick = (ev)=>{ ev.stopPropagation(); speak(w.english); };
     const delBtn = document.createElement('button'); delBtn.innerText='Sil'; delBtn.style.padding='8px';
-    delBtn.onclick = async (ev)=>{
+    delBtn.onclick = (ev)=>{
       ev.stopPropagation();
       if(!confirm('Bu kelimeyi silmek istiyor musunuz?')) return;
-      try {
-        await db.collection('words').doc(w.id).delete();
-        loadWordsFromServer();
-      } catch(e){ alert('Silme hatası: '+e.message); }
+      words = words.filter(x=> x.id !== w.id);
+      saveToStorage();
+      renderHomeGallery(); renderGallery();
     };
-    btns.appendChild(pBtn); btns.appendChild(delBtn);
+    btns.appendChild(pBtn);
+    btns.appendChild(delBtn);
     d.appendChild(btns);
     el.appendChild(d);
   });
 }
 
-/* ===== Add by image URL (preview + save) ===== */
+/* Add by image URL (preview + save) */
 const imgUrlInput = document.getElementById('imgUrlInput');
 const previewArea = document.getElementById('previewArea');
 const previewBtn = document.getElementById('previewUrlBtn');
@@ -241,27 +281,20 @@ clearPreviewBtn.addEventListener('click', ()=> {
   previewArea.innerHTML = '';
 });
 
-saveBtn.addEventListener('click', async ()=> {
+saveBtn.addEventListener('click', ()=> {
   const word = (document.getElementById('wordText').value || '').trim();
   const url = (imgUrlInput.value || '').trim();
   if(!word){ alert('İngilizce kelime girin.'); return; }
   if(!url){ alert('Resim URL girin.'); return; }
-  // basit URL kontrol
   if(!/^https?:\/\//i.test(url)){ alert('Geçerli bir http veya https URL girin.'); return; }
-  try {
-    saveBtn.disabled = true; saveBtn.innerText = 'Kaydediliyor...';
-    const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-    await db.collection('words').doc(id).set({
-      english: word,
-      imageURL: url,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    document.getElementById('wordText').value = '';
-    imgUrlInput.value = '';
-    previewArea.innerHTML = '<div class="small">Kaydedildi ✓</div>';
-    setTimeout(()=>{ navigate('library'); loadWordsFromServer(); }, 700);
-  } catch(e){ alert('Kaydetme hatası: '+e.message); }
-  finally { saveBtn.disabled = false; saveBtn.innerText = 'Kaydet'; }
+  // add
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  words.push({ id, english: word, imageURL: url, createdAt: Date.now() });
+  saveToStorage();
+  document.getElementById('wordText').value = '';
+  imgUrlInput.value = '';
+  previewArea.innerHTML = '<div class="small">Kaydedildi ✓</div>';
+  setTimeout(()=>{ navigate('library'); renderHomeGallery(); renderGallery(); }, 700);
 });
 
 /* TTS */
@@ -291,7 +324,7 @@ function renderQuizQuestion(){
   const grid = document.createElement('div'); grid.className='grid'; grid.style.marginTop='12px';
   choices.forEach(choice=>{
     const w = document.createElement('div'); w.className='thumb';
-    w.innerHTML = `<img src="${choice.imageURL}" alt=""><div class="label"></div>`;
+    w.innerHTML = `<div class="media"><img src="${escapeHtml(choice.imageURL)}" alt=""></div><div class="label"></div>`;
     w.onclick = ()=>{
       if(w.dataset.answered) return; w.dataset.answered='1';
       const correct = (choice.id === qObj.id);
@@ -322,11 +355,13 @@ function showQuizSummary(){
 
 /* Helpers */
 function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
-function escapeForJS(str){ return str.replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+function escapeForJS(str){ return (str||'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+function escapeHtml(s){ return (s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 /* Init */
 navigate('home');
-loadWordsFromServer();
+renderHomeGallery();
+renderGallery();
 </script>
 </body>
 </html>
