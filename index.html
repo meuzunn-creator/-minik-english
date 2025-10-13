@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Minik İngilizce — Metehan</title>
+<link rel="icon" href="data:," />
+<style>
+  :root{--bg:#fffaf0;--card:#fff;--accent:#ff6b6b;--accent2:#ffd166;--muted:#666;--success:#34c759;--danger:#ff3b30}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#fffaf0,#f0f7ff);color:#222}
+  .app{max-width:980px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;gap:14px;padding:18px}
+  .logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;box-shadow:0 10px 30px rgba(255,107,107,0.18)}
+  h1{margin:0;font-size:20px}
+  .muted{color:var(--muted);font-size:13px}
+  main{padding:12px;flex:1}
+  .card{background:var(--card);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 8px 24px rgba(20,20,40,0.06)}
+  .menu{display:flex;gap:8px;overflow:auto;padding:6px 0}
+  .menu button{padding:10px 12px;border-radius:12px;border:0;background:#f6f6f6;font-weight:700}
+  .menu button.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:white}
+  .hero{display:flex;align-items:center;gap:16px}
+  .greet{font-size:16px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .thumb{border-radius:12px;overflow:hidden;position:relative;border:6px solid transparent;transition:transform .18s, border-color .18s}
+  .thumb img{width:100%;height:140px;object-fit:cover;display:block}
+  .label{padding:8px;text-align:center;font-weight:800;background:linear-gradient(180deg,rgba(255,255,255,0.6),transparent)}
+  .big-btn{width:100%;padding:12px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#ff8a6b);color:#fff;font-weight:800}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .outline-green{border-color:var(--success)!important}
+  .outline-red{border-color:var(--danger)!important}
+  .center{text-align:center}
+  input[type=text]{width:100%;padding:10px;border-radius:10px;border:1px solid #eee}
+  input[type=file]{display:block;margin-top:8px}
+  .admin-bar{display:flex;gap:8px;align-items:center}
+  .small{font-size:12px;color:var(--muted)}
+  .confetti{font-size:20px}
+  @media (max-width:480px){ .grid{grid-template-columns:repeat(1,1fr)} .logo{width:54px;height:54px} }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">Mi</div>
+      <div>
+        <h1>Merhaba, METEHAN UZUN! 🎉</h1>
+        <div class="muted">Minik İngilizce — fotoğraflarla öğren</div>
+      </div>
+      <div style="margin-left:auto" class="admin-bar">
+        <div id="userArea" class="small"></div>
+        <button id="btnSign" style="padding:8px 10px;border-radius:10px;border:0;background:#fff">Giriş</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="card">
+        <div class="menu" role="tablist">
+          <button id="menu-home" class="active" onclick="navigate('home')">Anasayfa</button>
+          <button id="menu-library" onclick="navigate('library')">Kütüphane</button>
+          <button id="menu-add" onclick="navigate('add')">Kelime Ekle</button>
+          <button id="menu-quiz" onclick="navigate('quiz')">Test</button>
+          <button id="menu-settings" onclick="navigate('settings')">Ayarlar</button>
+        </div>
+      </div>
+
+      <div id="view-home" class="card">
+        <div class="hero">
+          <div style="flex:1">
+            <div style="font-weight:800">Hoş geldin Metehan! ⭐</div>
+            <div class="muted">Aşağıdaki resimlerden birine tıklayın; kelime sesli okunacak.</div>
+          </div>
+          <div style="width:160px">
+            <button class="big-btn" onclick="navigate('quiz')" style="background:linear-gradient(90deg,#5bd3ff,#6b8bff)">Hadi Teste Başla!</button>
+          </div>
+        </div>
+        <div style="margin-top:12px" id="homeGallery" class="grid"></div>
+      </div>
+
+      <section id="view-library" class="card" style="display:none">
+        <h3>Kütüphane</h3>
+        <div id="gallery" class="grid" style="margin-top:10px"></div>
+      </section>
+
+      <section id="view-add" class="card" style="display:none">
+        <h3>Kelime Ekle (Sadece yönetici)</h3>
+        <div class="muted">Fotoğrafı seç, İngilizce kelimeyi yaz ve "Kaydet"e tıkla.</div>
+        <div style="margin-top:10px">
+          <label>İngilizce kelime</label>
+          <input id="wordText" type="text" placeholder="Ör: apple" autocomplete="off"/>
+        </div>
+        <div style="margin-top:8px">
+          <label>Fotoğraf (kamera/galeri)</label>
+          <input id="imgFile" type="file" accept="image/*" capture="environment"/>
+        </div>
+        <div style="margin-top:12px" class="controls">
+          <button id="saveWordBtn" class="big-btn">Kaydet</button>
+          <button onclick="navigate('library')" class="big-btn" style="background:#9b9bff">Kütüphaneye Git</button>
+        </div>
+        <div id="previewArea" style="margin-top:12px"></div>
+      </section>
+
+      <section id="view-quiz" class="card" style="display:none">
+        <h3>Test</h3>
+        <div class="muted">Sesle sorulur; doğru fotoğrafı seç.</div>
+        <div style="margin-top:8px">
+          <button onclick="startQuiz()" class="big-btn" style="background:linear-gradient(90deg,#6bffb0,#34c759)">Teste Başla</button>
+        </div>
+        <div id="quizArea" style="margin-top:12px"></div>
+      </section>
+
+      <section id="view-settings" class="card" style="display:none">
+        <h3>Ayarlar</h3>
+        <div class="muted">Konuşma dili ve resim kalite ayarları</div>
+        <div style="margin-top:8px">
+          <label>Konuşma Dili</label>
+          <select id="voiceLang" style="width:100%;padding:10px;border-radius:8px;margin-top:6px">
+            <option value="en-US" selected>English (US)</option>
+            <option value="en-GB">English (UK)</option>
+          </select>
+        </div>
+        <div style="margin-top:12px">
+          <label>Resim kalite</label>
+          <input id="qualityRange" type="range" min="0.3" max="1" step="0.05" value="0.75"/>
+          <div class="small" id="qualityLabel">Kalite: %75</div>
+        </div>
+      </section>
+    </main>
+
+    <footer style="padding:12px;text-align:center" class="small muted">
+      Uygulama deneme amaçlı — fotoğraflar güvenli Firebase Storage'ta saklanır.
+    </footer>
+  </div>
+
+<!-- Firebase SDK (compat kolay kullanım için CDN) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<script>
+/* ============================
+   1) BURAYA KENDİ firebaseConfig'ini KOY
+   Firebase console -> Add app (web) -> config objesini kopyala
+   ============================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyByEMRx5GjQJCNJ49Q4sA0TUcVCvJ4BlpQ",
+  authDomain: "kids-engilish.firebaseapp.com",
+  projectId: "kids-engilish",
+  storageBucket: "kids-engilish.firebasestorage.app",
+  messagingSenderId: "429790707787",
+  appId: "1:429790707787:web:8fa870e9ea913632a38dce",
+  measurementId: "G-Q3W7S0ED20"
+};
+/* ============================ */
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+let words = []; // cached
+
+/* UI helpers */
+function navigate(view){
+  document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('menu-'+view).classList.add('active');
+  ['home','library','add','quiz','settings'].forEach(v=>{
+    document.getElementById('view-'+v).style.display = (v===view ? 'block' : 'none');
+  });
+  if(view==='library' || view==='home') loadWordsFromServer();
+  if(view==='add') renderPreview();
+  if(view==='settings'){
+    document.getElementById('voiceLang').value = localStorage.getItem('minik_lang') || 'en-US';
+    document.getElementById('qualityRange').value = localStorage.getItem('minik_quality') || 0.75;
+    document.getElementById('qualityLabel').innerText = `Kalite: %${Math.round((localStorage.getItem('minik_quality')||0.75)*100)}`;
+  }
+}
+
+/* Auth UI */
+const btnSign = document.getElementById('btnSign');
+const userArea = document.getElementById('userArea');
+btnSign.addEventListener('click', ()=> {
+  if(auth.currentUser){
+    auth.signOut();
+  } else {
+    showSignInPrompt();
+  }
+});
+
+auth.onAuthStateChanged(u => {
+  if(u){ userArea.innerText = u.email; btnSign.innerText = 'Çıkış'; }
+  else { userArea.innerText = ''; btnSign.innerText = 'Giriş'; }
+  // show/hide add/delete features based on auth
+  toggleAdminFeatures(!!u);
+});
+
+/* Sign-in prompt (simple) */
+function showSignInPrompt(){
+  const email = prompt('Yönetici e-posta:');
+  if(!email) return;
+  const pass = prompt('Şifre:');
+  if(!pass) return;
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(err => alert('Giriş hatası: ' + err.message));
+}
+
+/* Toggle admin-only UI (client-side) */
+function toggleAdminFeatures(isAdmin){
+  const addView = document.getElementById('view-add');
+  const saveBtn = document.getElementById('saveWordBtn');
+  if(isAdmin){
+    // allow access to add (button visible already but still verify on server)
+    saveBtn.disabled = false;
+  } else {
+    saveBtn.disabled = true;
+  }
+}
+
+/* Load words from Firestore */
+async function loadWordsFromServer(){
+  const homeGallery = document.getElementById('homeGallery');
+  const gallery = document.getElementById('gallery');
+  homeGallery.innerHTML = '<div class="muted">Yükleniyor...</div>';
+  gallery.innerHTML = '<div class="muted">Yükleniyor...</div>';
+  try {
+    const snap = await db.collection('words').orderBy('createdAt','desc').get();
+    words = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderHomeGallery();
+    renderGallery();
+  } catch(e){
+    console.error(e);
+  }
+}
+
+/* Render home gallery (click photo -> speak) */
+function renderHomeGallery(){
+  const el = document.getElementById('homeGallery');
+  el.innerHTML = '';
+  if(words.length===0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
+  words.forEach(w=>{
+    const d = document.createElement('div'); d.className='thumb';
+    d.innerHTML = `<img src="${w.imageURL}" alt="${w.english}"><div class="label">${w.english}</div>`;
+    d.onclick = () => {
+      speak(w.english);
+      // küçük kişisel nüans: görsel başarı ifadesi
+      const badge = document.createElement('div'); badge.style.position='absolute'; badge.style.top='8px'; badge.style.right='8px'; badge.style.padding='6px 8px'; badge.style.borderRadius='10px'; badge.style.background='rgba(255,255,255,0.9)'; badge.style.fontWeight='800'; badge.innerText='Metehan ✨';
+      d.appendChild(badge);
+      setTimeout(()=> { badge.remove(); }, 900);
+    };
+    el.appendChild(d);
+  });
+}
+
+/* Render library with admin delete buttons */
+function renderGallery(){
+  const el = document.getElementById('gallery');
+  el.innerHTML = '';
+  if(words.length===0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
+  words.forEach(w=>{
+    const d = document.createElement('div'); d.className='thumb';
+    d.innerHTML = `<img src="${w.imageURL}" alt="${w.english}"><div class="label">${w.english}</div>`;
+    const btns = document.createElement('div'); btns.style.display='flex'; btns.style.justifyContent='center'; btns.style.gap='8px'; btns.style.padding='8px';
+    const pBtn = document.createElement('button'); pBtn.innerText='🔊'; pBtn.style.padding='8px'; pBtn.onclick = (ev)=>{ ev.stopPropagation(); speak(w.english); };
+    btns.appendChild(pBtn);
+    const delBtn = document.createElement('button'); delBtn.innerText='Sil'; delBtn.style.padding='8px';
+    delBtn.onclick = async (ev)=>{ ev.stopPropagation(); await attemptDelete(w.id, w.storagePath); };
+    btns.appendChild(delBtn);
+    d.appendChild(btns);
+    el.appendChild(d);
+  });
+}
+
+/* Attempt delete — only if signed in */
+async function attemptDelete(docId, storagePath){
+  if(!auth.currentUser){ alert('Silmek için yönetici girişi yapmalısın.'); return; }
+  if(!confirm('Bu kelimeyi silmek istiyor musunuz?')) return;
+  try {
+    // delete from storage
+    if(storagePath){
+      const ref = storage.ref(storagePath);
+      await ref.delete();
+    }
+    // delete firestore doc
+    await db.collection('words').doc(docId).delete();
+    alert('Silindi');
+    loadWordsFromServer();
+  } catch(e){
+    alert('Silme hatası: ' + e.message);
+  }
+}
+
+/* Upload flow (convert to JPEG, upload to storage, then save doc) */
+const imgFileInput = document.getElementById('imgFile');
+const previewArea = document.getElementById('previewArea');
+const saveBtn = document.getElementById('saveWordBtn');
+const qualityRange = document.getElementById('qualityRange');
+
+qualityRange.addEventListener('input', ()=> {
+  document.getElementById('qualityLabel').innerText = `Kalite: %${Math.round(qualityRange.value * 100)}`;
+  localStorage.setItem('minik_quality', qualityRange.value);
+});
+document.getElementById('voiceLang').addEventListener('change', (e)=> localStorage.setItem('minik_lang', e.target.value));
+
+imgFileInput.addEventListener('change', renderPreview);
+function renderPreview(){
+  previewArea.innerHTML = '';
+  const f = imgFileInput.files[0];
+  if(!f) return;
+  const imgEl = document.createElement('img'); imgEl.style.maxWidth='220px'; imgEl.style.borderRadius='12px';
+  const r = new FileReader(); r.onload = e=> imgEl.src = e.target.result; r.readAsDataURL(f);
+  previewArea.appendChild(imgEl);
+}
+
+/* helper: convert to jpeg dataURL */
+function fileToJpegDataUrl(file, quality=0.75){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e => {
+      img.onload = () => {
+        try {
+          const maxDim = 1200;
+          let w = img.width, h = img.height;
+          if(Math.max(w,h) > maxDim){
+            if(w > h){ h = Math.round(h * (maxDim / w)); w = maxDim; }
+            else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+          }
+          const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        } catch(e){ reject(e); }
+      };
+      img.onerror = ()=> reject(new Error('Görüntü yüklenemedi.'));
+      img.src = e.target.result;
+    };
+    reader.onerror = ()=> reject(new Error('Dosya okunamadı.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+saveBtn.addEventListener('click', async ()=>{
+  if(!auth.currentUser){ alert('Kelime eklemek için yönetici olarak giriş yapmalısın.'); return; }
+  const text = document.getElementById('wordText').value.trim();
+  const file = imgFileInput.files[0];
+  if(!text){ alert('İngilizce kelime girin.'); return; }
+  if(!file){ alert('Fotoğraf seçin.'); return; }
+
+  try {
+    saveBtn.disabled = true;
+    saveBtn.innerText = 'Yükleniyor...';
+    const quality = parseFloat(localStorage.getItem('minik_quality') || 0.75);
+    const dataUrl = await fileToJpegDataUrl(file, quality);
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+    const path = `images/${id}.jpg`;
+    const ref = storage.ref(path);
+    // upload base64 data url
+    await ref.putString(dataUrl, 'data_url');
+    const url = await ref.getDownloadURL();
+    // firestore doc
+    await db.collection('words').doc(id).set({
+      english: text,
+      imageURL: url,
+      storagePath: path,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('wordText').value='';
+    imgFileInput.value='';
+    previewArea.innerHTML = '<div class="small">Kaydedildi ✓</div>';
+    setTimeout(()=> { navigate('library'); loadWordsFromServer(); }, 800);
+  } catch(e){
+    alert('Yükleme hatası: ' + e.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerText = 'Kaydet';
+  }
+});
+
+/* TTS speak */
+function speak(text){
+  if(!('speechSynthesis' in window)){ alert('Tarayıcı konuşma API desteklemiyor.'); return; }
+  window.speechSynthesis.cancel();
+  const lang = localStorage.getItem('minik_lang') || 'en-US';
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang; u.rate = 0.9;
+  window.speechSynthesis.speak(u);
+}
+
+/* QUIZ logic (pulls from words array) */
+let currentQuiz = null;
+function startQuiz(){
+  if(words.length === 0){ alert('Önce kelime ekleyin.'); return; }
+  const questions = shuffle([...words]);
+  currentQuiz = { questions, index: 0, results: [] };
+  renderQuizQuestion();
+}
+function renderQuizQuestion(){
+  const qObj = currentQuiz.questions[currentQuiz.index];
+  const qArea = document.getElementById('quizArea'); qArea.innerHTML='';
+  const decoys = words.filter(w=>w.id !== qObj.id);
+  const pick = shuffle(decoys).slice(0,4);
+  const choices = shuffle([qObj, ...pick]);
+  qArea.innerHTML = `<div class="center" style="font-weight:800">Soru ${currentQuiz.index+1} / ${currentQuiz.questions.length}</div>
+    <div style="margin-top:10px" class="center"><button onclick="speak('${escapeForJS(qObj.english)}')" class="big-btn" style="background:linear-gradient(90deg,#ffd166,#ff6b6b)">🔊 Dinle</button></div>`;
+  const grid = document.createElement('div'); grid.className='grid'; grid.style.marginTop='12px';
+  choices.forEach(choice => {
+    const w = document.createElement('div'); w.className='thumb';
+    w.innerHTML = `<img src="${choice.imageURL}" alt=""><div class="label"></div>`;
+    w.onclick = () => {
+      if(w.dataset.answered) return;
+      w.dataset.answered='1';
+      const correct = (choice.id === qObj.id);
+      if(correct){
+        w.classList.add('outline-green');
+        // celebration
+        const popup = document.createElement('div'); popup.style.position='absolute'; popup.style.top='8px'; popup.style.left='8px'; popup.style.padding='6px 8px'; popup.style.background='rgba(255,255,255,0.9)'; popup.style.borderRadius='10px'; popup.style.fontWeight='800'; popup.innerText = 'Tebrikler Metehan! ⭐';
+        w.appendChild(popup);
+      } else {
+        w.classList.add('outline-red');
+        // highlight correct
+        setTimeout(()=> {
+          Array.from(grid.querySelectorAll('.thumb')).forEach(t=>{
+            const img = t.querySelector('img');
+            if(img && img.src === qObj.imageURL) t.classList.add('outline-green');
+          });
+        }, 100);
+      }
+      currentQuiz.results.push({ qid: qObj.id, correct });
+      setTimeout(()=> {
+        if(currentQuiz.index + 1 < currentQuiz.questions.length){
+          currentQuiz.index++; renderQuizQuestion();
+        } else { showQuizSummary(); }
+      }, 800);
+    };
+    grid.appendChild(w);
+  });
+  qArea.appendChild(grid);
+}
+function showQuizSummary(){
+  const area = document.getElementById('quizArea');
+  const correctCount = currentQuiz.results.filter(r=>r.correct).length;
+  const total = currentQuiz.results.length;
+  area.innerHTML = `<div class="center"><h3>Tebrikler! Test bitti 🎉</h3>
+    <div style="font-size:18px;font-weight:800">${correctCount} / ${total} doğru</div>
+    <div style="margin-top:12px"><button onclick="startQuiz()" class="big-btn" style="background:linear-gradient(90deg,#6bffb0,#34c759)">Tekrar Dene</button></div>
+    <div style="margin-top:8px"><button onclick="navigate('library')" class="big-btn" style="background:#9b9bff">Kütüphaneye Dön</button></div></div>`;
+  currentQuiz = null;
+}
+
+/* helpers */
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
+function escapeForJS(str){ return str.replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+
+/* initial load */
+navigate('home');
+loadWordsFromServer();
+</script>
+</body>
+</html>
