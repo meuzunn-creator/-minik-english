@@ -7,13 +7,8 @@
 <link rel="icon" href="data:," />
 <style>
   :root{
-    --bg:#fffaf0;
-    --card:#fff;
-    --accent:#ff6b6b;
-    --accent2:#ffd166;
-    --muted:#666;
-    --success:#34c759;
-    --danger:#ff3b30;
+    --bg:#fffaf0; --card:#fff; --accent:#ff6b6b; --accent2:#ffd166;
+    --muted:#666; --success:#34c759; --danger:#ff3b30;
   }
   body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#fffaf0,#f0f7ff);color:#222}
   .app{max-width:980px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
@@ -164,7 +159,6 @@ function renderHomeGallery(){
     const d = document.createElement('div'); d.className='thumb';
     d.innerHTML = `<div class="media"><img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}"></div><div class="label">${escapeHtml(w.english)}</div>`;
     d.onclick = () => {
-      // Kelimeyi seçince kelime dil ayarına göre okunur
       speakWord(w.english);
       const badge = document.createElement('div'); badge.style.position='absolute'; badge.style.top='8px'; badge.style.right='8px';
       badge.style.padding='6px 8px'; badge.style.borderRadius='10px'; badge.style.background='rgba(255,255,255,0.9)'; badge.style.fontWeight='800'; badge.innerText='Metehan ✨';
@@ -226,37 +220,40 @@ saveBtn.addEventListener('click', ()=> {
   setTimeout(()=>{ navigate('library'); renderHomeGallery(); renderGallery(); }, 700);
 });
 
-/* ---------- TTS helpers ---------- */
+/* ---------- TTS helpers with Promise ---------- */
+function speakWithLangPromise(text, lang='tr-TR', rate=0.95){
+  return new Promise((resolve) => {
+    if(!('speechSynthesis' in window)){ resolve(); return; }
+    // cancel any current speech to avoid overlap
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = rate;
+    u.onend = () => resolve();
+    u.onerror = () => resolve();
+    window.speechSynthesis.speak(u);
+  });
+}
+
 /* speakWord: kelimeleri seçilen dilde okur (voiceLang) */
 function speakWord(text){
   const lang = document.getElementById('voiceLang').value || 'en-US';
-  speakWithLang(text, lang);
+  // fire-and-forget (don't block)
+  speakWithLangPromise(text, lang);
 }
 
-/* speakWithLang: belirli dilde konuşur (aynı anda çoklu çağrı karmaşasını önlemek için cancel) */
-function speakWithLang(text, lang='tr-TR'){
-  if(!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang;
-  u.rate = 0.95;
-  window.speechSynthesis.speak(u);
-}
-
-/* speakFeedback: kısa geri bildirimleri Türkçe olarak yönetir; tekrar sayısını parametreyle kontrol eder */
-function speakFeedback(text, repeats=1, delay=600){
-  if(!('speechSynthesis' in window)) return;
-  // İlk söylem hemen
-  speakWithLang(text, 'tr-TR');
-  // tekrarlar (kullanıcı istedi: "tekrar tekrar cevaplamanı istiyorum")
+/* speakFeedbackAsync: geri bildirimi belirtilen sayıda tekrar ve aralık ile söyler (await edilebilir) */
+async function speakFeedbackAsync(text, repeats=1, delay=700){
+  // speak first time and wait
+  await speakWithLangPromise(text, 'tr-TR');
   for(let i=1;i<repeats;i++){
-    setTimeout(()=> speakWithLang(text, 'tr-TR'), i*delay);
+    await new Promise(r => setTimeout(r, delay));
+    await speakWithLangPromise(text, 'tr-TR');
   }
 }
 
-/* ---------- Quiz logic with speech feedback ---------- */
+/* ---------- Quiz logic with awaited speech feedback ---------- */
 let currentQuiz = null;
-
 document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
 
 function startQuiz(){
@@ -276,9 +273,7 @@ function renderQuizQuestion(){
   qArea.innerHTML = `<div class="center" style="font-weight:800">Soru ${currentQuiz.index+1} / ${currentQuiz.questions.length}</div>
     <div style="margin-top:10px" class="center"><button id="playWordBtn" class="big-btn" style="background:linear-gradient(90deg,#ffd166,#ff6b6b)">🔊 Dinle</button></div>`;
 
-  document.getElementById('playWordBtn').addEventListener('click', ()=> {
-    speakWord(qObj.english);
-  });
+  document.getElementById('playWordBtn').addEventListener('click', ()=> { speakWord(qObj.english); });
   // otomatik dinlet
   setTimeout(()=> speakWord(qObj.english), 250);
 
@@ -288,32 +283,38 @@ function renderQuizQuestion(){
     const w = document.createElement('div'); w.className='thumb';
     w.innerHTML = `<div class="media"><img src="${escapeHtml(choice.imageURL)}" alt=""></div><div class="label"></div>`;
 
-    w.onclick = () => {
+    // make handler async so we can await speech
+    w.addEventListener('click', async function handler(){
       if(w.dataset.answered) return;
       w.dataset.answered = '1';
+      // prevent multiple clicks
+      Array.from(grid.querySelectorAll('.thumb')).forEach(t => t.style.pointerEvents='none');
+
       const correct = (choice.id === qObj.id);
 
       if(correct){
         w.classList.add('outline-green');
-        // görsel popup
         const popup = document.createElement('div'); popup.style.position='absolute'; popup.style.top='8px'; popup.style.left='8px';
         popup.style.padding='6px 8px'; popup.style.background='rgba(255,255,255,0.95)'; popup.style.borderRadius='10px'; popup.style.fontWeight='800'; popup.innerText='Doğru!';
         w.appendChild(popup);
 
-        // konuşma: Tebrik
-        speakFeedback('Tebrikler Metehan, doğru cevap!', 1);
+        // await the congratulations speech
+        await speakFeedbackAsync('Tebrikler Metehan, doğru cevap!', 1, 700);
       } else {
         w.classList.add('outline-red');
         // highlight correct after short delay
         setTimeout(()=>{ Array.from(grid.querySelectorAll('.thumb')).forEach(t=>{ const img=t.querySelector('img'); if(img && img.src === qObj.imageURL) t.classList.add('outline-green'); }); }, 150);
 
-        // konuşma: yanlış ve tekrar ettir (2 defa)
-        speakFeedback('Yanlış, Metehan. Tekrar dene.', 2, 700);
+        // await the wrong feedback (2 repeats)
+        await speakFeedbackAsync('Yanlış, Metehan. Tekrar dene.', 2, 700);
       }
 
       currentQuiz.results.push({ qid: qObj.id, correct });
 
-      // sonraki soru veya bitiş
+      // re-enable clicks before moving on
+      Array.from(grid.querySelectorAll('.thumb')).forEach(t => t.style.pointerEvents='auto');
+
+      // sonraki soru veya bitiş (kısa bekleme, ama only after speech finished above)
       setTimeout(()=> {
         if(currentQuiz.index + 1 < currentQuiz.questions.length){
           currentQuiz.index++;
@@ -321,8 +322,8 @@ function renderQuizQuestion(){
         } else {
           showQuizSummaryWithSpeech();
         }
-      }, 900);
-    };
+      }, 250);
+    });
 
     grid.appendChild(w);
   });
@@ -331,7 +332,7 @@ function renderQuizQuestion(){
 }
 
 /* Quiz summary with speech */
-function showQuizSummaryWithSpeech(){
+async function showQuizSummaryWithSpeech(){
   const area = document.getElementById('quizArea');
   const correctCount = currentQuiz.results.filter(r=>r.correct).length;
   const total = currentQuiz.results.length;
@@ -342,21 +343,16 @@ function showQuizSummaryWithSpeech(){
     <div style="margin-top:12px"><button onclick="startQuiz()" class="big-btn" style="background:linear-gradient(90deg,#6bffb0,#34c759)">Tekrar Dene</button></div>
     <div style="margin-top:8px"><button onclick="navigate('library')" class="big-btn" style="background:#9b9bff">Kütüphaneye Dön</button></div></div>`;
 
-  // Sesli özet (Türkçe)
-  // "Test bitti. X doğru, Y yanlış."
   const summary = `Test bitti. ${correctCount} doğru, ${wrong} yanlış.`;
-  speakWithLang(summary, 'tr-TR');
-
-  // ardından tebrik / teşvik
-  setTimeout(()=> {
-    if(correctCount > wrong){
-      speakWithLang('Tebrikler Metehan! Çok iyi iş çıkardın!', 'tr-TR');
-    } else if (correctCount === wrong){
-      speakWithLang('İyi bir deneme Metehan, tekrar et, daha da iyi olacaksın!', 'tr-TR');
-    } else {
-      speakWithLang('Bir dahaki sefer daha iyi olacak, tekrar dene Metehan!', 'tr-TR');
-    }
-  }, 900);
+  await speakWithLangPromise(summary, 'tr-TR');
+  await new Promise(r => setTimeout(r, 500));
+  if(correctCount > wrong){
+    await speakWithLangPromise('Tebrikler Metehan! Çok iyi iş çıkardın!', 'tr-TR');
+  } else if (correctCount === wrong){
+    await speakWithLangPromise('İyi bir deneme Metehan, tekrar et, daha da iyi olacaksın!', 'tr-TR');
+  } else {
+    await speakWithLangPromise('Bir dahaki sefer daha iyi olacak, tekrar dene Metehan!', 'tr-TR');
+  }
 
   currentQuiz = null;
 }
