@@ -88,8 +88,10 @@
           <input id="wordText" type="text" placeholder="Ör: apple" autocomplete="off"/>
         </div>
         <div style="margin-top:8px">
-          <label>Fotoğraf (kamera/galeri)</label>
-          <input id="imgFile" type="file" accept="image/*" capture="environment"/>
+  <label>Fotoğraf (kamera/galeri)</label><br/>
+  <button id="takePhoto">Kamera ile çek</button>
+  <button id="chooseFile">Galeriden seç</button>
+  <input id="imgFile" type="file" accept="image/*" style="display:none"/>
         </div>
         <div style="margin-top:12px" class="controls">
           <button id="saveWordBtn" class="big-btn">Kaydet</button>
@@ -456,3 +458,4 @@ loadWordsFromServer();
 </script>
 </body>
 </html>
+
