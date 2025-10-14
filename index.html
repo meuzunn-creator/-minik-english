@@ -34,7 +34,40 @@
   input[type=text]{width:100%;padding:10px;border-radius:10px;border:1px solid #eee}
   .small{font-size:12px;color:var(--muted)}
   #previewArea img{max-width:100%;border-radius:12px;margin-top:6px}
-  @media (max-width:480px){ .grid{grid-template-columns:repeat(1,1fr)} .logo{width:54px;height:54px} }
+
+  /* --- QUIZ: minimal şıklar (küçük kartlar) --- */
+  .choice-grid{
+    display:grid;
+    gap:10px;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    align-items:start;
+  }
+  .choice-thumb{
+    border-radius:10px;
+    overflow:hidden;
+    position:relative;
+    background:#fff;
+    border:4px solid transparent;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:6px;
+  }
+  .choice-thumb .media{width:100%;height:0;padding-top:75%;position:relative}
+  .choice-thumb img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .choice-thumb .label{margin-top:6px;font-weight:700;font-size:13px;text-align:center;color:#333}
+  .choice-thumb.outline-green{border-color:var(--success)}
+  .choice-thumb.outline-red{border-color:var(--danger)}
+  /* daha küçük ekranlarda 2 sütun, geniş ekranlarda 4 sütun */
+  @media (min-width:900px){
+    .grid{grid-template-columns:repeat(3,1fr)}
+    .choice-grid{grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));}
+  }
+  @media (max-width:480px){
+    .grid{grid-template-columns:repeat(1,1fr)}
+    .choice-grid{grid-template-columns:repeat(2,1fr)}
+  }
 </style>
 </head>
 <body>
@@ -151,7 +184,7 @@ function loadFromStorage(){
 }
 function saveToStorage(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(words)); } catch(e){ console.error('save error', e); alert('Kaydetme sırasında hata: localStorage dolu veya erişim yok.'); } }
 
-/* Rendering */
+/* Rendering home & library */
 function renderHomeGallery(){
   const el = document.getElementById('homeGallery'); el.innerHTML = '';
   if(words.length === 0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
@@ -224,7 +257,6 @@ saveBtn.addEventListener('click', ()=> {
 function speakWithLangPromise(text, lang='tr-TR', rate=0.95){
   return new Promise((resolve) => {
     if(!('speechSynthesis' in window)){ resolve(); return; }
-    // cancel any current speech to avoid overlap
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang;
@@ -234,17 +266,11 @@ function speakWithLangPromise(text, lang='tr-TR', rate=0.95){
     window.speechSynthesis.speak(u);
   });
 }
-
-/* speakWord: kelimeleri seçilen dilde okur (voiceLang) */
 function speakWord(text){
   const lang = document.getElementById('voiceLang').value || 'en-US';
-  // fire-and-forget (don't block)
-  speakWithLangPromise(text, lang);
+  speakWithLangPromise(text, lang); // fire-and-forget
 }
-
-/* speakFeedbackAsync: geri bildirimi belirtilen sayıda tekrar ve aralık ile söyler (await edilebilir) */
 async function speakFeedbackAsync(text, repeats=1, delay=700){
-  // speak first time and wait
   await speakWithLangPromise(text, 'tr-TR');
   for(let i=1;i<repeats;i++){
     await new Promise(r => setTimeout(r, delay));
@@ -252,7 +278,7 @@ async function speakFeedbackAsync(text, repeats=1, delay=700){
   }
 }
 
-/* ---------- Quiz logic with awaited speech feedback ---------- */
+/* ---------- Quiz logic with awaited speech feedback & minimal choices ---------- */
 let currentQuiz = null;
 document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
 
@@ -272,49 +298,40 @@ function renderQuizQuestion(){
 
   qArea.innerHTML = `<div class="center" style="font-weight:800">Soru ${currentQuiz.index+1} / ${currentQuiz.questions.length}</div>
     <div style="margin-top:10px" class="center"><button id="playWordBtn" class="big-btn" style="background:linear-gradient(90deg,#ffd166,#ff6b6b)">🔊 Dinle</button></div>`;
-
   document.getElementById('playWordBtn').addEventListener('click', ()=> { speakWord(qObj.english); });
   // otomatik dinlet
   setTimeout(()=> speakWord(qObj.english), 250);
 
-  const grid = document.createElement('div'); grid.className='grid'; grid.style.marginTop='12px';
+  const grid = document.createElement('div'); grid.className='choice-grid'; grid.style.marginTop='12px';
 
   choices.forEach(choice=>{
-    const w = document.createElement('div'); w.className='thumb';
+    const w = document.createElement('div'); w.className='choice-thumb';
     w.innerHTML = `<div class="media"><img src="${escapeHtml(choice.imageURL)}" alt=""></div><div class="label"></div>`;
 
-    // make handler async so we can await speech
+    // async handler so we await speech feedback
     w.addEventListener('click', async function handler(){
       if(w.dataset.answered) return;
       w.dataset.answered = '1';
-      // prevent multiple clicks
-      Array.from(grid.querySelectorAll('.thumb')).forEach(t => t.style.pointerEvents='none');
+      // disable other clicks
+      Array.from(grid.querySelectorAll('.choice-thumb')).forEach(t => t.style.pointerEvents='none');
 
       const correct = (choice.id === qObj.id);
 
       if(correct){
         w.classList.add('outline-green');
-        const popup = document.createElement('div'); popup.style.position='absolute'; popup.style.top='8px'; popup.style.left='8px';
-        popup.style.padding='6px 8px'; popup.style.background='rgba(255,255,255,0.95)'; popup.style.borderRadius='10px'; popup.style.fontWeight='800'; popup.innerText='Doğru!';
-        w.appendChild(popup);
-
-        // await the congratulations speech
         await speakFeedbackAsync('Tebrikler Metehan, doğru cevap!', 1, 700);
       } else {
         w.classList.add('outline-red');
-        // highlight correct after short delay
-        setTimeout(()=>{ Array.from(grid.querySelectorAll('.thumb')).forEach(t=>{ const img=t.querySelector('img'); if(img && img.src === qObj.imageURL) t.classList.add('outline-green'); }); }, 150);
-
-        // await the wrong feedback (2 repeats)
+        // Do NOT highlight correct answer automatically (as requested)
         await speakFeedbackAsync('Yanlış, Metehan. Tekrar dene.', 2, 700);
       }
 
       currentQuiz.results.push({ qid: qObj.id, correct });
 
-      // re-enable clicks before moving on
-      Array.from(grid.querySelectorAll('.thumb')).forEach(t => t.style.pointerEvents='auto');
+      // re-enable clicks
+      Array.from(grid.querySelectorAll('.choice-thumb')).forEach(t => t.style.pointerEvents='auto');
 
-      // sonraki soru veya bitiş (kısa bekleme, ama only after speech finished above)
+      // small delay then next
       setTimeout(()=> {
         if(currentQuiz.index + 1 < currentQuiz.questions.length){
           currentQuiz.index++;
