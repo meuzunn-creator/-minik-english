@@ -1,212 +1,389 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Minik İngilizce — Metehan</title>
+<link rel="icon" href="data:," />
 <style>
-  body {
-    font-family: "Comic Sans MS", sans-serif;
-    margin: 0;
-    background: linear-gradient(180deg, #fff5e1, #e8f6ff);
-    color: #333;
+  :root{
+    --bg:#fffaf0; --card:#fff; --accent:#ff6b6b; --accent2:#ffd166;
+    --muted:#666; --success:#34c759; --danger:#ff3b30;
   }
-  header {
-    background: #ff6b6b;
-    color: #fff;
-    text-align: center;
-    padding: 15px;
-    font-size: 20px;
-    font-weight: bold;
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#fffaf0,#f0f7ff);color:#222}
+  .app{max-width:980px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;gap:14px;padding:18px}
+  .logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;box-shadow:0 10px 30px rgba(255,107,107,0.18)}
+  h1{margin:0;font-size:20px}
+  .muted{color:var(--muted);font-size:13px}
+  main{padding:12px;flex:1}
+  .card{background:var(--card);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 8px 24px rgba(20,20,40,0.06)}
+  .menu{display:flex;gap:8px;overflow:auto;padding:6px 0}
+  .menu button{padding:10px 12px;border-radius:12px;border:0;background:#f6f6f6;font-weight:700}
+  .menu button.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:white}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .thumb{border-radius:12px;overflow:hidden;position:relative;border:6px solid transparent;transition:transform .18s, border-color .18s;background:#fafafa;display:flex;align-items:center;justify-content:center}
+  .thumb .media{width:100%;height:0;padding-top:70%;position:relative}
+  .thumb img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .label{padding:8px;text-align:center;font-weight:800;background:linear-gradient(180deg,rgba(255,255,255,0.6),transparent)}
+  .big-btn{width:100%;padding:12px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#ff8a6b);color:#fff;font-weight:800}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .outline-green{border-color:var(--success)!important}
+  .outline-red{border-color:var(--danger)!important}
+  .center{text-align:center}
+  input[type=text]{width:100%;padding:10px;border-radius:10px;border:1px solid #eee}
+  .small{font-size:12px;color:var(--muted)}
+  #previewArea img{max-width:100%;border-radius:12px;margin-top:6px}
+
+  /* --- QUIZ: minimal şıklar (küçük kartlar) --- */
+  .choice-grid{
+    display:grid;
+    gap:10px;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    align-items:start;
   }
-  main {
-    padding: 15px;
+  .choice-thumb{
+    border-radius:10px;
+    overflow:hidden;
+    position:relative;
+    background:#fff;
+    border:4px solid transparent;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:6px;
   }
-  .menu {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 15px;
+  .choice-thumb .media{width:100%;height:0;padding-top:75%;position:relative}
+  .choice-thumb img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .choice-thumb .label{margin-top:6px;font-weight:700;font-size:13px;text-align:center;color:#333}
+  .choice-thumb.outline-green{border-color:var(--success)}
+  .choice-thumb.outline-red{border-color:var(--danger)}
+  /* daha küçük ekranlarda 2 sütun, geniş ekranlarda 4 sütun */
+  @media (min-width:900px){
+    .grid{grid-template-columns:repeat(3,1fr)}
+    .choice-grid{grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));}
   }
-  .menu button {
-    background: #ffd166;
-    border: none;
-    padding: 10px;
-    border-radius: 10px;
-    font-weight: bold;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .thumb {
-    border: 4px solid transparent;
-    border-radius: 12px;
-    overflow: hidden;
-    background: white;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-  }
-  .thumb img {
-    width: 100%;
-    height: 160px;
-    object-fit: contain;
-    background: #f8f8f8;
-  }
-  .label {
-    text-align: center;
-    font-weight: bold;
-    padding: 8px;
-  }
-  .correct {
-    border-color: #34c759 !important;
-  }
-  .wrong {
-    border-color: #ff3b30 !important;
-  }
-  input, button {
-    font-size: 16px;
+  @media (max-width:480px){
+    .grid{grid-template-columns:repeat(1,1fr)}
+    .choice-grid{grid-template-columns:repeat(2,1fr)}
   }
 </style>
 </head>
 <body>
-  <header>🎉 Metehan’ın Minik İngilizce Uygulaması 🎉</header>
+  <div class="app">
+    <header>
+      <div class="logo">Mi</div>
+      <div>
+        <h1>Merhaba, METEHAN UZUN! 🎉</h1>
+        <div class="muted">Minik İngilizce — link ile resim ekleme (local)</div>
+      </div>
+    </header>
 
-  <main>
-    <div class="menu">
-      <button onclick="showView('home')">🏠 Anasayfa</button>
-      <button onclick="showView('add')">➕ Kelime Ekle</button>
-      <button onclick="showView('quiz')">🧩 Test</button>
-    </div>
+    <main>
+      <div class="card">
+        <div class="menu" role="tablist">
+          <button id="menu-home" class="active" onclick="navigate('home')">Anasayfa</button>
+          <button id="menu-library" onclick="navigate('library')">Kütüphane</button>
+          <button id="menu-add" onclick="navigate('add')">Kelime Ekle</button>
+          <button id="menu-quiz" onclick="navigate('quiz')">Test</button>
+          <button id="menu-settings" onclick="navigate('settings')">Ayarlar</button>
+        </div>
+      </div>
 
-    <div id="view-home">
-      <h3>📚 Kütüphane</h3>
-      <div id="gallery" class="grid"></div>
-    </div>
+      <div id="view-home" class="card">
+        <div class="hero">
+          <div style="flex:1">
+            <div style="font-weight:800">Hoş geldin Metehan! ⭐</div>
+            <div class="muted">Aşağıdaki resimlerden birine tıklayın; kelime sesli okunacak.</div>
+          </div>
+          <div style="width:160px">
+            <button class="big-btn" onclick="navigate('quiz')" style="background:linear-gradient(90deg,#5bd3ff,#6b8bff)">Hadi Teste Başla!</button>
+          </div>
+        </div>
+        <div style="margin-top:12px" id="homeGallery" class="grid"></div>
+      </div>
 
-    <div id="view-add" style="display:none;">
-      <h3>Kelime Ekle</h3>
-      <input id="word" type="text" placeholder="İngilizce kelime" style="width:100%;padding:8px;border-radius:8px;"><br><br>
-      <input id="imgLink" type="text" placeholder="Fotoğraf linkini yapıştır (https://...)" style="width:100%;padding:8px;border-radius:8px;"><br><br>
-      <button onclick="saveWord()" style="background:#6b8bff;color:white;padding:10px;border:none;border-radius:10px;">Kaydet</button>
-    </div>
+      <section id="view-library" class="card" style="display:none">
+        <h3>Kütüphane</h3>
+        <div id="gallery" class="grid" style="margin-top:10px"></div>
+      </section>
 
-    <div id="view-quiz" style="display:none;">
-      <h3>Test</h3>
-      <button onclick="startQuiz()" style="background:#34c759;color:white;padding:10px;border:none;border-radius:10px;">Teste Başla</button>
-      <div id="quizArea" style="margin-top:15px;"></div>
-    </div>
-  </main>
+      <section id="view-add" class="card" style="display:none">
+        <h3>Kelime Ekle</h3>
+        <div class="muted">Google'dan bulduğun resmin <strong>doğrudan URL</strong>'sini yapıştır. Örnek: https://site.com/image.jpg</div>
+
+        <div style="margin-top:10px">
+          <label>İngilizce kelime</label>
+          <input id="wordText" type="text" placeholder="Ör: apple" autocomplete="off"/>
+        </div>
+
+        <div style="margin-top:8px">
+          <label>Resim URL (doğrudan .jpg/.png linki)</label>
+          <input id="imgUrlInput" type="text" placeholder="https://...image.jpg" />
+          <div style="margin-top:8px">
+            <button id="previewUrlBtn" class="big-btn" style="width:auto;display:inline-block;margin-right:8px">Önizle</button>
+            <button id="clearPreviewBtn" class="big-btn" style="width:auto;display:inline-block;background:#9b9bff">Temizle</button>
+          </div>
+        </div>
+
+        <div id="previewArea" style="margin-top:12px"></div>
+
+        <div style="margin-top:12px" class="controls">
+          <button id="saveWordBtn" class="big-btn">Kaydet</button>
+          <button onclick="navigate('library')" class="big-btn" style="background:#9b9bff">Kütüphaneye Git</button>
+        </div>
+      </section>
+
+      <section id="view-quiz" class="card" style="display:none">
+        <h3>Test</h3>
+        <div class="muted">Sesle sorulur; doğru fotoğrafı seç.</div>
+        <div style="margin-top:8px">
+          <button id="startQuizBtn" class="big-btn" style="background:linear-gradient(90deg,#6bffb0,#34c759)">Teste Başla</button>
+        </div>
+        <div id="quizArea" style="margin-top:12px"></div>
+      </section>
+
+      <section id="view-settings" class="card" style="display:none">
+        <h3>Ayarlar</h3>
+        <div class="muted">Konuşma dili (kelimelerin telaffuzu için)</div>
+        <div style="margin-top:8px">
+          <label>Konuşma Dili</label>
+          <select id="voiceLang" style="width:100%;padding:10px;border-radius:8px;margin-top:6px">
+            <option value="en-US" selected>English (US)</option>
+            <option value="en-GB">English (UK)</option>
+          </select>
+        </div>
+      </section>
+    </main>
+
+    <footer style="padding:12px;text-align:center" class="small muted">
+      Uygulama local olarak çalışır — veriler sadece bu cihazda saklanır.
+    </footer>
+  </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwdjZGT1CuJlFiATRRzIWtmN1e2QFsGq7BEjEhJql5MzWdXoQjgfze_A2hkjsSz7oTUsQ/exec"; // ← Google Apps Script URL buraya
+/* Local storage key */
+const STORAGE_KEY = 'minik_words_local_v1';
+let words = loadFromStorage();
 
-let words = [];
+/* Navigation */
+function navigate(view){
+  document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('menu-'+view).classList.add('active');
+  ['home','library','add','quiz','settings'].forEach(v=>{
+    document.getElementById('view-'+v).style.display = (v===view ? 'block' : 'none');
+  });
+  if(view === 'home' || view === 'library') { renderHomeGallery(); renderGallery(); }
+}
+
+/* Storage helpers */
+function loadFromStorage(){
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
+  catch(e){ console.error('load error', e); return []; }
+}
+function saveToStorage(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(words)); } catch(e){ console.error('save error', e); alert('Kaydetme sırasında hata: localStorage dolu veya erişim yok.'); } }
+
+/* Rendering home & library */
+function renderHomeGallery(){
+  const el = document.getElementById('homeGallery'); el.innerHTML = '';
+  if(words.length === 0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
+  words.slice().reverse().forEach(w=>{
+    const d = document.createElement('div'); d.className='thumb';
+    d.innerHTML = `<div class="media"><img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}"></div><div class="label">${escapeHtml(w.english)}</div>`;
+    d.onclick = () => {
+      speakWord(w.english);
+      const badge = document.createElement('div'); badge.style.position='absolute'; badge.style.top='8px'; badge.style.right='8px';
+      badge.style.padding='6px 8px'; badge.style.borderRadius='10px'; badge.style.background='rgba(255,255,255,0.9)'; badge.style.fontWeight='800'; badge.innerText='Metehan ✨';
+      d.appendChild(badge);
+      setTimeout(()=>{ badge.remove(); }, 900);
+    };
+    el.appendChild(d);
+  });
+}
+
+function renderGallery(){
+  const el = document.getElementById('gallery'); el.innerHTML = '';
+  if(words.length === 0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
+  words.slice().reverse().forEach(w=>{
+    const d = document.createElement('div'); d.className='thumb';
+    d.innerHTML = `<div class="media"><img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}"></div><div class="label">${escapeHtml(w.english)}</div>`;
+    const btns = document.createElement('div'); btns.style.display='flex'; btns.style.justifyContent='center'; btns.style.gap='8px'; btns.style.padding='8px';
+    const pBtn = document.createElement('button'); pBtn.innerText='🔊'; pBtn.style.padding='8px';
+    pBtn.onclick = (ev)=>{ ev.stopPropagation(); speakWord(w.english); };
+    const delBtn = document.createElement('button'); delBtn.innerText='Sil'; delBtn.style.padding='8px';
+    delBtn.onclick = (ev)=>{
+      ev.stopPropagation();
+      if(!confirm('Bu kelimeyi silmek istiyor musunuz?')) return;
+      words = words.filter(x=> x.id !== w.id);
+      saveToStorage();
+      renderHomeGallery(); renderGallery();
+    };
+    btns.appendChild(pBtn); btns.appendChild(delBtn); d.appendChild(btns); el.appendChild(d);
+  });
+}
+
+/* Add by image URL */
+const imgUrlInput = document.getElementById('imgUrlInput');
+const previewArea = document.getElementById('previewArea');
+const previewBtn = document.getElementById('previewUrlBtn');
+const clearPreviewBtn = document.getElementById('clearPreviewBtn');
+const saveBtn = document.getElementById('saveWordBtn');
+
+previewBtn.addEventListener('click', ()=> {
+  const url = (imgUrlInput.value || '').trim(); previewArea.innerHTML = '';
+  if(!url){ previewArea.innerHTML = '<div class="muted">Lütfen geçerli bir URL girin.</div>'; return; }
+  const img = document.createElement('img'); img.src = url; img.alt = 'preview';
+  img.onerror = () => { previewArea.innerHTML = '<div class="muted">Resim yüklenemiyor (CORS veya hatalı URL olabilir).</div>'; };
+  previewArea.appendChild(img);
+});
+
+clearPreviewBtn.addEventListener('click', ()=> { imgUrlInput.value = ''; previewArea.innerHTML = ''; });
+
+saveBtn.addEventListener('click', ()=> {
+  const word = (document.getElementById('wordText').value || '').trim();
+  const url = (imgUrlInput.value || '').trim();
+  if(!word){ alert('İngilizce kelime girin.'); return; }
+  if(!url){ alert('Resim URL girin.'); return; }
+  if(!/^https?:\/\//i.test(url)){ alert('Geçerli bir http veya https URL girin.'); return; }
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  words.push({ id, english: word, imageURL: url, createdAt: Date.now() });
+  saveToStorage();
+  document.getElementById('wordText').value = ''; imgUrlInput.value = ''; previewArea.innerHTML = '<div class="small">Kaydedildi ✓</div>';
+  setTimeout(()=>{ navigate('library'); renderHomeGallery(); renderGallery(); }, 700);
+});
+
+/* ---------- TTS helpers with Promise ---------- */
+function speakWithLangPromise(text, lang='tr-TR', rate=0.95){
+  return new Promise((resolve) => {
+    if(!('speechSynthesis' in window)){ resolve(); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = rate;
+    u.onend = () => resolve();
+    u.onerror = () => resolve();
+    window.speechSynthesis.speak(u);
+  });
+}
+function speakWord(text){
+  const lang = document.getElementById('voiceLang').value || 'en-US';
+  speakWithLangPromise(text, lang); // fire-and-forget
+}
+async function speakFeedbackAsync(text, repeats=1, delay=700){
+  await speakWithLangPromise(text, 'tr-TR');
+  for(let i=1;i<repeats;i++){
+    await new Promise(r => setTimeout(r, delay));
+    await speakWithLangPromise(text, 'tr-TR');
+  }
+}
+
+/* ---------- Quiz logic with awaited speech feedback & minimal choices ---------- */
 let currentQuiz = null;
+document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
 
-async function loadWords() {
-  const res = await fetch(API_URL + "?action=get");
-  words = await res.json();
-  renderGallery();
-}
-
-function showView(v) {
-  document.querySelectorAll("#view-home,#view-add,#view-quiz").forEach(el => el.style.display = "none");
-  document.getElementById("view-" + v).style.display = "block";
-  if (v === "home") loadWords();
-}
-
-function renderGallery() {
-  const g = document.getElementById("gallery");
-  g.innerHTML = "";
-  if (words.length === 0) {
-    g.innerHTML = "<div>Henüz kelime yok</div>";
-    return;
-  }
-  words.forEach(w => {
-    const d = document.createElement("div");
-    d.className = "thumb";
-    d.innerHTML = `<img src="${w.image}" alt="${w.word}"><div class="label">${w.word}</div>`;
-    d.onclick = () => speak(w.word);
-    g.appendChild(d);
-  });
-}
-
-async function saveWord() {
-  const word = document.getElementById("word").value.trim();
-  const image = document.getElementById("imgLink").value.trim();
-  if (!word || !image) {
-    alert("Lütfen kelime ve fotoğraf linkini gir.");
-    return;
-  }
-  await fetch(API_URL + "?action=add", {
-    method: "POST",
-    body: JSON.stringify({ word, image }),
-    headers: { "Content-Type": "application/json" }
-  });
-  alert("Kaydedildi!");
-  document.getElementById("word").value = "";
-  document.getElementById("imgLink").value = "";
-  showView("home");
-}
-
-function speak(text) {
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  window.speechSynthesis.speak(u);
-}
-
-function startQuiz() {
-  if (words.length === 0) {
-    alert("Önce kelime ekle!");
-    return;
-  }
-  currentQuiz = { index: 0, results: [] };
+function startQuiz(){
+  if(words.length === 0){ alert('Önce kelime ekleyin.'); return; }
+  const questions = shuffle([...words]);
+  currentQuiz = { questions, index: 0, results: [] };
   renderQuizQuestion();
 }
 
-function renderQuizQuestion() {
-  const quiz = document.getElementById("quizArea");
-  quiz.innerHTML = "";
-  const q = words[currentQuiz.index];
-  const options = shuffle(words).slice(0,4);
-  if (!options.includes(q)) options[0] = q;
-  quiz.innerHTML = `<button onclick="speak('${q.word}')">🔊 Dinle</button>`;
-  const grid = document.createElement("div");
-  grid.className = "grid";
-  options.forEach(opt => {
-    const div = document.createElement("div");
-    div.className = "thumb";
-    div.innerHTML = `<img src="${opt.image}">`;
-    div.onclick = () => checkAnswer(opt.word === q.word, div);
-    grid.appendChild(div);
+function renderQuizQuestion(){
+  const qObj = currentQuiz.questions[currentQuiz.index];
+  const qArea = document.getElementById('quizArea'); qArea.innerHTML = '';
+  const decoys = words.filter(w=>w.id !== qObj.id);
+  const pick = shuffle(decoys).slice(0,4);
+  const choices = shuffle([qObj, ...pick]);
+
+  qArea.innerHTML = `<div class="center" style="font-weight:800">Soru ${currentQuiz.index+1} / ${currentQuiz.questions.length}</div>
+    <div style="margin-top:10px" class="center"><button id="playWordBtn" class="big-btn" style="background:linear-gradient(90deg,#ffd166,#ff6b6b)">🔊 Dinle</button></div>`;
+  document.getElementById('playWordBtn').addEventListener('click', ()=> { speakWord(qObj.english); });
+  // otomatik dinlet
+  setTimeout(()=> speakWord(qObj.english), 250);
+
+  const grid = document.createElement('div'); grid.className='choice-grid'; grid.style.marginTop='12px';
+
+  choices.forEach(choice=>{
+    const w = document.createElement('div'); w.className='choice-thumb';
+    w.innerHTML = `<div class="media"><img src="${escapeHtml(choice.imageURL)}" alt=""></div><div class="label"></div>`;
+
+    // async handler so we await speech feedback
+    w.addEventListener('click', async function handler(){
+      if(w.dataset.answered) return;
+      w.dataset.answered = '1';
+      // disable other clicks
+      Array.from(grid.querySelectorAll('.choice-thumb')).forEach(t => t.style.pointerEvents='none');
+
+      const correct = (choice.id === qObj.id);
+
+      if(correct){
+        w.classList.add('outline-green');
+        await speakFeedbackAsync('Tebrikler Metehan, doğru cevap!', 1, 700);
+      } else {
+        w.classList.add('outline-red');
+        // Do NOT highlight correct answer automatically (as requested)
+        await speakFeedbackAsync('Yanlış, Metehan. Tekrar dene.', 2, 700);
+      }
+
+      currentQuiz.results.push({ qid: qObj.id, correct });
+
+      // re-enable clicks
+      Array.from(grid.querySelectorAll('.choice-thumb')).forEach(t => t.style.pointerEvents='auto');
+
+      // small delay then next
+      setTimeout(()=> {
+        if(currentQuiz.index + 1 < currentQuiz.questions.length){
+          currentQuiz.index++;
+          renderQuizQuestion();
+        } else {
+          showQuizSummaryWithSpeech();
+        }
+      }, 250);
+    });
+
+    grid.appendChild(w);
   });
-  quiz.appendChild(grid);
+
+  qArea.appendChild(grid);
 }
 
-function checkAnswer(correct, div) {
-  if (correct) {
-    div.classList.add("correct");
-    speak("Tebrikler Metehan! Doğru cevapladın!");
+/* Quiz summary with speech */
+async function showQuizSummaryWithSpeech(){
+  const area = document.getElementById('quizArea');
+  const correctCount = currentQuiz.results.filter(r=>r.correct).length;
+  const total = currentQuiz.results.length;
+  const wrong = total - correctCount;
+
+  area.innerHTML = `<div class="center"><h3>Tebrikler! Test bitti 🎉</h3>
+    <div style="font-size:18px;font-weight:800">${correctCount} / ${total} doğru</div>
+    <div style="margin-top:12px"><button onclick="startQuiz()" class="big-btn" style="background:linear-gradient(90deg,#6bffb0,#34c759)">Tekrar Dene</button></div>
+    <div style="margin-top:8px"><button onclick="navigate('library')" class="big-btn" style="background:#9b9bff">Kütüphaneye Dön</button></div></div>`;
+
+  const summary = `Test bitti. ${correctCount} doğru, ${wrong} yanlış.`;
+  await speakWithLangPromise(summary, 'tr-TR');
+  await new Promise(r => setTimeout(r, 500));
+  if(correctCount > wrong){
+    await speakWithLangPromise('Tebrikler Metehan! Çok iyi iş çıkardın!', 'tr-TR');
+  } else if (correctCount === wrong){
+    await speakWithLangPromise('İyi bir deneme Metehan, tekrar et, daha da iyi olacaksın!', 'tr-TR');
   } else {
-    div.classList.add("wrong");
-    speak("Yanlış Metehan, tekrar dene!");
+    await speakWithLangPromise('Bir dahaki sefer daha iyi olacak, tekrar dene Metehan!', 'tr-TR');
   }
-  setTimeout(() => {
-    currentQuiz.index++;
-    if (currentQuiz.index < words.length) renderQuizQuestion();
-    else speak("Test bitti, aferin Metehan!");
-  }, 2000);
+
+  currentQuiz = null;
 }
 
-function shuffle(a) {
-  for (let i=a.length-1; i>0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
+/* Helpers */
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
+function escapeForJS(str){ return (str||'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+function escapeHtml(s){ return (s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
-loadWords();
+/* Init */
+document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
+navigate('home');
+renderHomeGallery();
+renderGallery();
 </script>
 </body>
 </html>
