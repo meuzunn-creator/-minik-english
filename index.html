@@ -76,7 +76,7 @@
       <div class="logo">Mi</div>
       <div>
         <h1>Merhaba, METEHAN UZUN! 🎉</h1>
-        <div class="muted">Minik İngilizce — link ile resim ekleme (local)</div>
+        <div class="muted">Minik İngilizce — link ile resim ekleme</div>
       </div>
     </header>
 
@@ -158,33 +158,104 @@
     </main>
 
     <footer style="padding:12px;text-align:center" class="small muted">
-      Uygulama local olarak çalışır — veriler sadece bu cihazda saklanır.
+      Uygulama hem localStorage hem de opsiyonel Google Sheets (Apps Script) ile çalışabilir.
     </footer>
   </div>
 
 <script>
+/* =========================
+   CONFIGURATION
+   - Eğer Google Apps Script Web App URL'in varsa buraya yapıştır.
+   - Örnek: "https://script.google.com/macros/s/AKfycbx.../exec"
+   - Eğer boş bırakırsan uygulama localStorage ile çalışır.
+   ========================= */
+const SERVER_URL = ""; // ← BURAYA Apps Script web app URL'in (veya boş bırak)
+
 /* Local storage key */
 const STORAGE_KEY = 'minik_words_local_v1';
-let words = loadFromStorage();
 
-/* Navigation */
+/* In-memory words array */
+let words = [];
+
+/* ---------- Navigation ---------- */
 function navigate(view){
   document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
   document.getElementById('menu-'+view).classList.add('active');
   ['home','library','add','quiz','settings'].forEach(v=>{
     document.getElementById('view-'+v).style.display = (v===view ? 'block' : 'none');
   });
-  if(view === 'home' || view === 'library') { renderHomeGallery(); renderGallery(); }
+  if(view === 'home' || view === 'library') { loadWords(); }
 }
 
-/* Storage helpers */
-function loadFromStorage(){
+/* ---------- Storage helpers ---------- */
+function loadFromLocal(){
   try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
-  catch(e){ console.error('load error', e); return []; }
+  catch(e){ console.error('local load error', e); return []; }
 }
-function saveToStorage(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(words)); } catch(e){ console.error('save error', e); alert('Kaydetme sırasında hata: localStorage dolu veya erişim yok.'); } }
+function saveToLocal(){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(words)); }
+  catch(e){ console.error('local save error', e); alert('Kaydetme sırasında hata: localStorage dolu veya erişim yok.'); }
+}
 
-/* Rendering home & library */
+/* ---------- Server (Google Apps Script) helpers ---------- */
+async function loadFromServer(){
+  if(!SERVER_URL) throw new Error('no server');
+  const url = SERVER_URL + '?action=list';
+  const res = await fetch(url, {cache: 'no-store'});
+  if(!res.ok) throw new Error('server error: ' + res.status);
+  const j = await res.json();
+  // Expecting array of objects with keys id, english, imageURL, createdAt
+  // If your Apps Script returns different keys, adapt here.
+  return j.words || j; // support both formats
+}
+async function addToServer(english, imageURL){
+  if(!SERVER_URL) throw new Error('no server');
+  const payload = { action: 'add', english, imageURL };
+  const res = await fetch(SERVER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  if(!res.ok) throw new Error('server add failed: ' + res.status);
+  const j = await res.json();
+  return j;
+}
+async function deleteOnServer(id){
+  if(!SERVER_URL) throw new Error('no server');
+  const payload = { action: 'delete', id };
+  const res = await fetch(SERVER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  if(!res.ok) throw new Error('server delete failed: ' + res.status);
+  const j = await res.json();
+  return j;
+}
+
+/* ---------- Top-level loadWords: try server, fallback local ---------- */
+async function loadWords(){
+  const homeGallery = document.getElementById('homeGallery');
+  const gallery = document.getElementById('gallery');
+  homeGallery.innerHTML = '<div class="muted">Yükleniyor...</div>';
+  gallery.innerHTML = '<div class="muted">Yükleniyor...</div>';
+
+  if(SERVER_URL){
+    try {
+      const srv = await loadFromServer();
+      // normalize: ensure fields id, english, imageURL
+      words = srv.map(item => ({
+        id: item.id || item.ID || item.key || (item.english ? (item.english + '_' + (item.createdAt||'')) : Date.now().toString(36)),
+        english: item.english || item.word || item.English || '',
+        imageURL: item.imageURL || item.image || item.Image || ''
+      })).filter(w => w.english && w.imageURL);
+      renderHomeGallery();
+      renderGallery();
+      return;
+    } catch(e){
+      console.warn('server load failed, fallback local:', e);
+      // fallthrough to local
+    }
+  }
+  // fallback local
+  words = loadFromLocal();
+  renderHomeGallery();
+  renderGallery();
+}
+
+/* ---------- Rendering home & library ---------- */
 function renderHomeGallery(){
   const el = document.getElementById('homeGallery'); el.innerHTML = '';
   if(words.length === 0){ el.innerHTML = '<div class="muted">Henüz kelime yok.</div>'; return; }
@@ -212,18 +283,27 @@ function renderGallery(){
     const pBtn = document.createElement('button'); pBtn.innerText='🔊'; pBtn.style.padding='8px';
     pBtn.onclick = (ev)=>{ ev.stopPropagation(); speakWord(w.english); };
     const delBtn = document.createElement('button'); delBtn.innerText='Sil'; delBtn.style.padding='8px';
-    delBtn.onclick = (ev)=>{
+    delBtn.onclick = async (ev)=>{
       ev.stopPropagation();
       if(!confirm('Bu kelimeyi silmek istiyor musunuz?')) return;
-      words = words.filter(x=> x.id !== w.id);
-      saveToStorage();
-      renderHomeGallery(); renderGallery();
+      try {
+        if(SERVER_URL){
+          await deleteOnServer(w.id);
+          await loadWords();
+        } else {
+          words = words.filter(x=> x.id !== w.id);
+          saveToLocal();
+          renderHomeGallery(); renderGallery();
+        }
+      } catch(e){
+        alert('Silme hatası: ' + e.message);
+      }
     };
     btns.appendChild(pBtn); btns.appendChild(delBtn); d.appendChild(btns); el.appendChild(d);
   });
 }
 
-/* Add by image URL */
+/* ---------- Add by image URL (preview + save) ---------- */
 const imgUrlInput = document.getElementById('imgUrlInput');
 const previewArea = document.getElementById('previewArea');
 const previewBtn = document.getElementById('previewUrlBtn');
@@ -240,17 +320,37 @@ previewBtn.addEventListener('click', ()=> {
 
 clearPreviewBtn.addEventListener('click', ()=> { imgUrlInput.value = ''; previewArea.innerHTML = ''; });
 
-saveBtn.addEventListener('click', ()=> {
+saveBtn.addEventListener('click', async ()=> {
   const word = (document.getElementById('wordText').value || '').trim();
   const url = (imgUrlInput.value || '').trim();
   if(!word){ alert('İngilizce kelime girin.'); return; }
   if(!url){ alert('Resim URL girin.'); return; }
   if(!/^https?:\/\//i.test(url)){ alert('Geçerli bir http veya https URL girin.'); return; }
-  const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-  words.push({ id, english: word, imageURL: url, createdAt: Date.now() });
-  saveToStorage();
-  document.getElementById('wordText').value = ''; imgUrlInput.value = ''; previewArea.innerHTML = '<div class="small">Kaydedildi ✓</div>';
-  setTimeout(()=>{ navigate('library'); renderHomeGallery(); renderGallery(); }, 700);
+
+  saveBtn.disabled = true; saveBtn.innerText = 'Kaydediliyor...';
+
+  try {
+    if(SERVER_URL){
+      // send to server
+      const res = await addToServer(word, url);
+      if(res && res.ok === false){ throw new Error(res.error || 'server error'); }
+      // re-load from server to sync ids
+      await loadWords();
+      document.getElementById('wordText').value = ''; imgUrlInput.value = ''; previewArea.innerHTML = '<div class="small">Kaydedildi ✓</div>';
+      setTimeout(()=>{ navigate('library'); }, 700);
+    } else {
+      // local fallback
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+      words.push({ id, english: word, imageURL: url, createdAt: Date.now() });
+      saveToLocal();
+      document.getElementById('wordText').value = ''; imgUrlInput.value = ''; previewArea.innerHTML = '<div class="small">Kaydedildi ✓</div>';
+      setTimeout(()=>{ navigate('library'); renderHomeGallery(); renderGallery(); }, 700);
+    }
+  } catch(e){
+    alert('Kaydetme hatası: ' + e.message);
+  } finally {
+    saveBtn.disabled = false; saveBtn.innerText = 'Kaydet';
+  }
 });
 
 /* ---------- TTS helpers with Promise ---------- */
@@ -374,16 +474,15 @@ async function showQuizSummaryWithSpeech(){
   currentQuiz = null;
 }
 
-/* Helpers */
+/* ---------- Helpers ---------- */
 function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
 function escapeForJS(str){ return (str||'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
 function escapeHtml(s){ return (s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
-/* Init */
+/* ---------- Init ---------- */
 document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
 navigate('home');
-renderHomeGallery();
-renderGallery();
+// initial load called by navigate('home')
 </script>
 </body>
 </html>
