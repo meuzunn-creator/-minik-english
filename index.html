@@ -140,15 +140,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <script>
-
-   const firebaseConfig = {
-  apiKey: "AIzaSyDRFlEOwV5WuoiOmNAwSyWWOVT73yqrmYs",
-  authDomain: "minik-ingilizce.firebaseapp.com",
-  projectId: "minik-ingilizce",
-  storageBucket: "minik-ingilizce.firebasestorage.app",
-  messagingSenderId: "960816468983",
-  appId: "1:960816468983:web:7e0e67319f78256208d4f2",
-  measurementId: "G-const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyDRFlEOwV5WuoiOmNAwSyWWOVT73yqrmYs",
   authDomain: "minik-ingilizce.firebaseapp.com",
   projectId: "minik-ingilizce",
@@ -157,7 +149,16 @@
   appId: "1:960816468983:web:7e0e67319f78256208d4f2",
   measurementId: "G-F9REKWSN29"
 };
-
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDRFlEOwV5WuoiOmNAwSyWWOVT73yqrmYs",
+  authDomain: "minik-ingilizce.firebaseapp.com",
+  projectId: "minik-ingilizce",
+  storageBucket: "minik-ingilizce.firebasestorage.app",
+  messagingSenderId: "960816468983",
+  appId: "1:960816468983:web:7e0e67319f78256208d4f2",
+  measurementId: "G-F9REKWSN29"
+};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
