@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Minik İngilizce — Metehan</title>
+<title>Minik İngilizce</title>
 <link rel="icon" href="data:," />
 <style>
   :root{
@@ -12,10 +12,90 @@
   }
   body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#fffaf0,#f0f7ff);color:#222}
   .app{max-width:980px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-  header{display:flex;align-items:center;gap:14px;padding:18px}
-  .logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;box-shadow:0 10px 30px rgba(255,107,107,0.18)}
-  h1{margin:0;font-size:20px}
-  .muted{color:var(--muted);font-size:13px}
+  
+  /* YENİ MODERN HEADER STİLİ */
+  header{
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 18px;
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.1"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="white"/><circle cx="50" cy="50" r="1" fill="white"/><circle cx="80" cy="80" r="1" fill="white"/><circle cx="30" cy="70" r="1" fill="white"/><circle cx="70" cy="30" r="1" fill="white"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  }
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    z-index: 2;
+  }
+  .logo{
+    width: 70px;
+    height: 70px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #ffd166, #ff6b6b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+    border: 3px solid rgba(255,255,255,0.2);
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+  }
+  .header-text {
+    flex: 1;
+  }
+  h1{
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(45deg, #fff, #ffd166);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .subtitle{
+    color: rgba(255,255,255,0.9);
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .subtitle::before {
+    content: '✨';
+    font-size: 16px;
+  }
+  .student-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+    margin-top: 8px;
+    display: inline-block;
+  }
+
   main{padding:12px;flex:1}
   .card{background:var(--card);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 8px 24px rgba(20,20,40,0.06)}
   .menu{display:flex;gap:8px;overflow:auto;padding:6px 0}
@@ -67,33 +147,38 @@
   @media (max-width:480px){
     .grid{grid-template-columns:repeat(1,1fr)}
     .choice-grid{grid-template-columns:repeat(2,1fr)}
+    h1{font-size:20px}
+    .logo{width:60px;height:60px;font-size:20px}
   }
 </style>
 </head>
 <body>
   <div class="app">
     <header>
-      <div class="logo">Mi</div>
-      <div>
-        <h1>Merhaba, METEHAN UZUN! 🎉</h1>
-        <div class="muted">Minik İngilizce — Sabit Kelime Listesi</div>
+      <div class="header-content">
+        <div class="logo">EN</div>
+        <div class="header-text">
+          <h1>English Adventure 🚀</h1>
+          <div class="subtitle">Eğlenceli İngilizce Öğrenme Platformu</div>
+          <div class="student-badge">⭐ Bilgi Hayattır</div>
+        </div>
       </div>
     </header>
 
     <main>
       <div class="card">
         <div class="menu" role="tablist">
-          <button id="menu-home" class="active" onclick="navigate('home')">Anasayfa</button>
-          <button id="menu-library" onclick="navigate('library')">Kütüphane</button>
-          <button id="menu-quiz" onclick="navigate('quiz')">Test</button>
-          <button id="menu-settings" onclick="navigate('settings')">Ayarlar</button>
+          <button id="menu-home" class="active" onclick="navigate('home')">🏠 Anasayfa</button>
+          <button id="menu-library" onclick="navigate('library')">📚 Kütüphane</button>
+          <button id="menu-quiz" onclick="navigate('quiz')">🎯 Test</button>
+          <button id="menu-settings" onclick="navigate('settings')">⚙️ Ayarlar</button>
         </div>
       </div>
 
       <div id="view-home" class="card">
         <div class="hero">
           <div style="flex:1">
-            <div style="font-weight:800">Hoş geldin Metehan! ⭐</div>
+            <div style="font-weight:800">Hoş geldiniz! ⭐</div>
             <div class="muted">Aşağıdaki resimlerden birine tıklayın; kelime sesli okunacak.</div>
           </div>
           <div style="width:160px">
@@ -104,12 +189,12 @@
       </div>
 
       <section id="view-library" class="card" style="display:none">
-        <h3>Kütüphane</h3>
+        <h3>📚 Kelime Kütüphanesi</h3>
         <div id="gallery" class="grid" style="margin-top:10px"></div>
       </section>
 
       <section id="view-quiz" class="card" style="display:none">
-        <h3>Test</h3>
+        <h3>🎯 Bilgi Testi</h3>
         <div class="muted">Sesle sorulur; doğru fotoğrafı seç.</div>
         <div style="margin-top:8px">
           <button id="startQuizBtn" class="big-btn" style="background:linear-gradient(90deg,#6bffb0,#34c759)">Teste Başla</button>
@@ -118,7 +203,7 @@
       </section>
 
       <section id="view-settings" class="card" style="display:none">
-        <h3>Ayarlar</h3>
+        <h3>⚙️ Ayarlar</h3>
         <div class="muted">Konuşma dili (kelimelerin telaffuzu için)</div>
         <div style="margin-top:8px">
           <label>Konuşma Dili</label>
@@ -131,7 +216,7 @@
     </main>
 
     <footer style="padding:12px;text-align:center" class="small muted">
-      Uygulama sabit kelime listesi kullanır — kelimeler kod içinde tanımlanmıştır.
+      🎓 Minik 1. Sınıflar için özel olarak tasarlanmıştır
     </footer>
   </div>
 
@@ -191,7 +276,7 @@ function renderHomeGallery(){
     d.onclick = () => {
       speakWord(w.english);
       const badge = document.createElement('div'); badge.style.position='absolute'; badge.style.top='8px'; badge.style.right='8px';
-      badge.style.padding='6px 8px'; badge.style.borderRadius='10px'; badge.style.background='rgba(255,255,255,0.9)'; badge.style.fontWeight='800'; badge.innerText='Metehan ✨';
+      badge.style.padding='6px 8px'; badge.style.borderRadius='10px'; badge.style.background='rgba(255,255,255,0.9)'; badge.style.fontWeight='800'; badge.innerText='✨✨✨✨';
       d.appendChild(badge);
       setTimeout(()=>{ badge.remove(); }, 900);
     };
@@ -278,11 +363,11 @@ function renderQuizQuestion(){
 
       if(correct){
         w.classList.add('outline-green');
-        await speakFeedbackAsync('Tebrikler Metehan, doğru cevap!', 1, 700);
+        await speakFeedbackAsync('Tebrikler Mükemmelsin, doğru cevap!', 1, 700);
       } else {
         w.classList.add('outline-red');
         // Do NOT highlight correct answer automatically (as requested)
-        await speakFeedbackAsync('Yanlış, Metehan. Tekrar dene.', 2, 700);
+        await speakFeedbackAsync('Yanlış, ama üzülme. Tekrar dene.', 2, 700);
       }
 
       currentQuiz.results.push({ qid: qObj.id, correct });
@@ -323,11 +408,11 @@ async function showQuizSummaryWithSpeech(){
   await speakWithLangPromise(summary, 'tr-TR');
   await new Promise(r => setTimeout(r, 500));
   if(correctCount > wrong){
-    await speakWithLangPromise('Tebrikler Metehan! Çok iyi iş çıkardın!', 'tr-TR');
+    await speakWithLangPromise('Tebrikler! Çok iyi iş çıkardın!', 'tr-TR');
   } else if (correctCount === wrong){
-    await speakWithLangPromise('İyi bir deneme Metehan, tekrar et, daha da iyi olacaksın!', 'tr-TR');
+    await speakWithLangPromise('İyi bir deneme , tekrar et, daha da iyi olacaksın!', 'tr-TR');
   } else {
-    await speakWithLangPromise('Bir dahaki sefer daha iyi olacak, tekrar dene Metehan!', 'tr-TR');
+    await speakWithLangPromise('Bir dahaki sefer daha iyi olacak, tekrar denemeyi unutma!', 'tr-TR');
   }
 
   currentQuiz = null;
