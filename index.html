@@ -286,53 +286,35 @@
     color: var(--text);
   }
 
-  /* Category Tabs */
-  .category-tabs {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 12px 0;
-    margin-bottom: 12px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+  /* Category Dropdown */
+  .category-dropdown {
+    margin-bottom: 16px;
   }
 
-  .category-tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  .category-tab {
-    padding: 10px 16px;
-    border-radius: 20px;
-    border: 2px solid var(--border);
-    background: white;
+  .category-dropdown label {
     font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-    white-space: nowrap;
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .category-dropdown select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    font-size: 14px;
     transition: all 0.3s ease;
-    flex-shrink: 0;
+    background: white;
+    min-height: 45px;
+    background: linear-gradient(135deg, #f8f9ff, #e9ecef);
+    font-weight: 600;
   }
 
-  .category-tab:active {
-    transform: scale(0.95);
-  }
-
-  .category-tab.active {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  }
-
-  .category-badge {
-    background: rgba(255,255,255,0.9);
-    color: var(--primary);
-    border-radius: 8px;
-    padding: 3px 6px;
-    font-size: 11px;
-    margin-left: 6px;
-    font-weight: 800;
+  .category-dropdown select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
   }
 
   /* Quiz Styles */
@@ -601,7 +583,11 @@
           </div>
         </div>
         
-        <div class="category-tabs" id="homeCategoryTabs"></div>
+        <div class="category-dropdown">
+          <label for="homeCategorySelect">📁 Kategori Seçin:</label>
+          <select id="homeCategorySelect" onchange="changeCategory('home', this.value)"></select>
+        </div>
+        
         <div id="homeGallery" class="grid"></div>
       </div>
 
@@ -623,7 +609,11 @@
           </div>
         </div>
         
-        <div class="category-tabs" id="libraryCategoryTabs"></div>
+        <div class="category-dropdown">
+          <label for="libraryCategorySelect">📁 Kategori Seçin:</label>
+          <select id="libraryCategorySelect" onchange="changeCategory('library', this.value)"></select>
+        </div>
+        
         <div id="gallery" class="grid"></div>
       </section>
 
@@ -1343,7 +1333,7 @@ function navigate(view) {
   });
   
   if (view === 'home' || view === 'library') {
-    renderCategoryTabs(view);
+    renderCategoryDropdown(view);
     if (view === 'home') renderHomeGallery();
     if (view === 'library') renderGallery();
     updateStats();
@@ -1352,25 +1342,28 @@ function navigate(view) {
   }
 }
 
-// Kategori sekmeleri
-function renderCategoryTabs(view) {
-  const containerId = view + 'CategoryTabs';
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
+// Kategori dropdown menüleri
+function renderCategoryDropdown(view) {
+  const selectId = view + 'CategorySelect';
+  const select = document.getElementById(selectId);
+  select.innerHTML = '';
   
   Object.keys(categories).forEach(catId => {
     const cat = categories[catId];
-    const tab = document.createElement('div');
-    tab.className = `category-tab ${selectedCategory[view] === catId ? 'active' : ''}`;
-    tab.innerHTML = `${cat.name} <span class="category-badge">${getWordCountByCategory(catId)}</span>`;
-    tab.onclick = () => {
-      selectedCategory[view] = catId;
-      renderCategoryTabs(view);
-      if (view === 'home') renderHomeGallery();
-      if (view === 'library') renderGallery();
-    };
-    container.appendChild(tab);
+    const option = document.createElement('option');
+    option.value = catId;
+    option.textContent = `${cat.name} (${getWordCountByCategory(catId)})`;
+    if (selectedCategory[view] === catId) {
+      option.selected = true;
+    }
+    select.appendChild(option);
   });
+}
+
+function changeCategory(view, categoryId) {
+  selectedCategory[view] = categoryId;
+  if (view === 'home') renderHomeGallery();
+  if (view === 'library') renderGallery();
 }
 
 function getWordCountByCategory(categoryId) {
