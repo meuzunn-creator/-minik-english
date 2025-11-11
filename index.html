@@ -450,7 +450,7 @@
   }
 
   /* Form Elements */
-  input[type="text"], select {
+  select {
     width: 100%;
     padding: 12px;
     border-radius: 10px;
@@ -656,17 +656,6 @@
             <option value="en-GB">English (UK) 🇬🇧</option>
           </select>
         </div>
-
-        <div style="margin-bottom:16px">
-          <h3 style="margin-bottom:8px">📁 Kategori Yönetimi</h3>
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-            <input type="text" id="newCategoryName" placeholder="Yeni kategori..." style="flex:1;min-width:120px">
-            <button onclick="addNewCategory()" class="big-btn" style="padding:10px 16px;background:linear-gradient(135deg,#ff6b6b,#ff8a6b)">
-              ➕ Ekle
-            </button>
-          </div>
-          <div id="categoryList"></div>
-        </div>
       </section>
     </main>
 
@@ -680,9 +669,9 @@
   </div>
 
 <script>
-// Kelime listesi
+// TÜM KELİMELER - HİÇBİRİ ATLANMADI!
 let words = [
-  {
+ {
     id: "1",
     english: "skirt",
     turkce: "etek",
@@ -1289,17 +1278,17 @@ let words = [
   imageURL: "https://png.pngtree.com/png-clipart/20240701/original/pngtree-golden-colour-number-10-png-image_15462092.png",
   learned: false
 },
- 
 ];
 
+// Kategoriler
 const categories = {
   "all": { name: "Tüm Kelimeler 🌈", description: "Tüm kelimeler" },
   "clothes": { name: "👕 Clothes", description: "Giyim eşyaları" },
-  "fruits": { name: "🍎 Food and Drinks", description: "Food and Drinks" },
+  "food": { name: "🍎 Food & Drinks", description: "Yiyecek ve İçecekler" },
   "body": { name: "👤 Body", description: "Vücut bölümleri" },
+  "colors": { name: "🎨 Colors", description: "Renkler" },
   "actions": { name: "⚡ Actions", description: "Eylemler" },
   "numbers": { name: "🔢 Numbers", description: "Sayılar" },
-  "Color": { name: "🎨 Color", description: "Renkler" }
 };
 
 let selectedCategory = {
@@ -1360,8 +1349,6 @@ function navigate(view) {
     updateStats();
   } else if (view === 'quiz') {
     updateQuizCategorySelect();
-  } else if (view === 'settings') {
-    renderCategoryManagement();
   }
 }
 
@@ -1415,7 +1402,7 @@ function renderHomeGallery() {
     
     d.innerHTML = `
       <div class="media">
-        <img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}" loading="lazy">
+        <img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1579546929662-711aa81148cf?w=400&h=300&fit=crop'">
         ${w.learned ? '<div style="position:absolute;top:6px;right:6px;background:var(--success);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;">✓</div>' : ''}
       </div>
       <div class="label">${escapeHtml(w.english)}</div>
@@ -1427,6 +1414,24 @@ function renderHomeGallery() {
         w.learned = true;
         d.style.borderColor = 'var(--success)';
         updateStats();
+        
+        // Geçici feedback
+        const badge = document.createElement('div');
+        badge.style.position = 'absolute';
+        badge.style.top = '8px';
+        badge.style.left = '8px';
+        badge.style.padding = '8px 12px';
+        badge.style.borderRadius = '15px';
+        badge.style.background = 'rgba(255,255,255,0.95)';
+        badge.style.fontWeight = '800';
+        badge.style.color = 'var(--primary)';
+        badge.style.boxShadow = '0 3px 10px rgba(0,0,0,0.2)';
+        badge.innerText = '✨ ' + w.english + ' ✨';
+        d.appendChild(badge);
+        
+        setTimeout(() => {
+          badge.remove();
+        }, 1500);
       }
     };
     
@@ -1453,7 +1458,7 @@ function renderGallery() {
     
     d.innerHTML = `
       <div class="media">
-        <img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}" loading="lazy">
+        <img src="${escapeHtml(w.imageURL)}" alt="${escapeHtml(w.english)}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1579546929662-711aa81148cf?w=400&h=300&fit=crop'">
       </div>
       <div class="label">${escapeHtml(w.english)}</div>
     `;
@@ -1498,7 +1503,7 @@ function updateQuizCategorySelect() {
   });
 }
 
-// Test başlatma
+// Test başlatma - SORU SAYILARI AYARLANDI!
 function startQuiz() {
   const selectedCat = document.getElementById('quizCategory').value;
   let quizWords = getWordsByCategory(selectedCat);
@@ -1513,12 +1518,21 @@ function startQuiz() {
     return;
   }
   
-  const questions = shuffle([...quizWords]).slice(0, 10);
+  // Kategoriye göre soru sayısını belirle
+  let questionCount;
+  if (selectedCat === 'all') {
+    questionCount = Math.min(25, quizWords.length); // Tüm kelimelerde 25 soru
+  } else {
+    questionCount = Math.min(10, quizWords.length); // Diğer kategorilerde 10 soru
+  }
+  
+  const questions = shuffle([...quizWords]).slice(0, questionCount);
   currentQuiz = {
     questions,
     index: 0,
     results: [],
-    category: selectedCat
+    category: selectedCat,
+    totalQuestions: questionCount
   };
   renderQuizQuestion();
 }
@@ -1530,7 +1544,7 @@ function renderQuizQuestion() {
   
   qArea.innerHTML = `
     <div style="text-align:center;margin-bottom:16px;">
-      <div style="font-weight:800;font-size:16px;">Soru ${currentQuiz.index + 1} / ${currentQuiz.questions.length}</div>
+      <div style="font-weight:800;font-size:16px;">Soru ${currentQuiz.index + 1} / ${currentQuiz.totalQuestions}</div>
       <div class="small" style="color:var(--text-light);margin-top:4px;">Kategori: ${categories[currentQuiz.category]?.name || 'Tüm Kelimeler'}</div>
     </div>
     <div style="text-align:center;margin-bottom:16px;">
@@ -1557,7 +1571,7 @@ function renderQuizQuestion() {
     choiceEl.className = 'choice-thumb';
     choiceEl.innerHTML = `
       <div class="media">
-        <img src="${escapeHtml(choice.imageURL)}" alt="" loading="lazy">
+        <img src="${escapeHtml(choice.imageURL)}" alt="" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1579546929662-711aa81148cf?w=400&h=300&fit=crop'">
       </div>
     `;
     
@@ -1606,10 +1620,11 @@ async function showQuizSummaryWithSpeech() {
   
   area.innerHTML = `
     <div style="text-align:center;padding:16px;">
-      <div style="font-size:36px;margin-bottom:8px">${percentage >= 70 ? '🎉' : '👍'}</div>
-      <h3>Test Tamamlandı!</h3>
+      <div style="font-size:36px;margin-bottom:8px">${percentage >= 70 ? '🎉' : percentage >= 50 ? '👍' : '👏'}</div>
+      <h3>Test Tamamlandı! ${percentage >= 70 ? 'Harikasın! 🥳' : 'Güzel Deneme! 😊'}</h3>
       <div style="font-size:20px;font-weight:800;margin:8px 0;color:var(--primary)">${correctCount} / ${total} doğru</div>
       <div style="background:linear-gradient(135deg,#f8f9ff,#e9ecef);padding:12px;border-radius:12px;margin:12px 0;">
+        <div style="font-weight:700;margin-bottom:5px;">İlerleme Durumu:</div>
         <div class="progress-bar">
           <div class="progress-fill" style="width:${percentage}%"></div>
         </div>
@@ -1626,8 +1641,23 @@ async function showQuizSummaryWithSpeech() {
     </div>
   `;
   
-  const summary = `Test bitti. ${correctCount} doğru, ${total - correctCount} yanlış.`;
+  // Başarılı sonuçta kutlama
+  if (percentage >= 80) {
+    showCelebration('🎉 Mükemmel!<br>Süpersin! 🌟');
+  }
+  
+  const summary = `Test bitti. ${correctCount} doğru, ${total - correctCount} yanlış. ${percentage} başarı oranı.`;
   await speakWithLangPromise(summary, 'tr-TR');
+  
+  setTimeout(() => {
+    if (percentage >= 70) {
+      speakWithLangPromise('Harika iş çıkardın! Sen bir süpersin!', 'tr-TR');
+    } else if (percentage >= 50) {
+      speakWithLangPromise('Güzel bir deneme, biraz daha pratik yap, daha iyi olacaksın!', 'tr-TR');
+    } else {
+      speakWithLangPromise('Üzülme, her deneme daha iyi olmanı sağlar. Tekrar denemeyi unutma!', 'tr-TR');
+    }
+  }, 1000);
   
   currentQuiz = null;
 }
@@ -1679,6 +1709,10 @@ function escapeHtml(s) {
 document.addEventListener('DOMContentLoaded', function() {
   navigate('home');
   updateStats();
+  // İlk kelimeyi otomatik olarak seslendir (hoş geldin mesajı)
+  setTimeout(() => {
+    speakWithLangPromise('Hoş geldin! English Adventure dünyasına seni bekliyor! Hadi eğlenerek İngilizce öğrenelim!', 'tr-TR');
+  }, 1000);
 });
 
 document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
